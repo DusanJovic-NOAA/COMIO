@@ -1,0 +1,26 @@
+AT_INIT()
+AT_COLOR_TESTS
+AT_SETUP([HDF5: integer I/O])
+echo ">>> TEST PASSED" > expout
+AT_CHECK([/usr/local/mpich/3.2.1/bin/mpiexec -n 4 ../../test_comio_hdf_int],[],[expout],[ignore])
+AT_CLEANUP
+AT_SETUP([HDF5: floating point I/O])
+echo ">>> TEST PASSED" > expout
+AT_CHECK([/usr/local/mpich/3.2.1/bin/mpiexec -n 4 ../../test_comio_hdf_flt],[],[expout],[ignore])
+AT_CLEANUP
+AT_SETUP([HDF5: double precision I/O])
+echo ">>> TEST PASSED" > expout
+AT_CHECK([/usr/local/mpich/3.2.1/bin/mpiexec -n 4 ../../test_comio_hdf_dbl],[],[expout],[ignore])
+AT_CLEANUP
+AT_SETUP([PnetCDF: integer I/O])
+echo ">>> TEST PASSED" > expout
+AT_CHECK([/usr/local/mpich/3.2.1/bin/mpiexec -n 4 ../../test_comio_pnc_int],[],[expout],[ignore])
+AT_CLEANUP
+AT_SETUP([PnetCDF: floating point I/O])
+echo ">>> TEST PASSED" > expout
+AT_CHECK([/usr/local/mpich/3.2.1/bin/mpiexec -n 4 ../../test_comio_pnc_flt],[],[expout],[ignore])
+AT_CLEANUP
+AT_SETUP([PnetCDF: double precision I/O])
+echo ">>> TEST PASSED" > expout
+AT_CHECK([/usr/local/mpich/3.2.1/bin/mpiexec -n 4 ../../test_comio_pnc_dbl],[],[expout],[ignore])
+AT_CLEANUP
