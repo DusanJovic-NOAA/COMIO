@@ -145,6 +145,7 @@ contains
     class(COMIO_T)                :: io
     character(len=*), intent(in)  :: dsetname
     integer,          intent(out) :: buffer(:)
+    buffer = 0
     io % err % rc = io % err % success
   end subroutine io_dataset_read_1d_int
 
@@ -153,6 +154,7 @@ contains
     class(COMIO_T)                :: io
     character(len=*), intent(in)  :: dsetname
     integer,          intent(out) :: buffer(:,:)
+    buffer = 0
     io % err % rc = io % err % success
   end subroutine io_dataset_read_2d_int
 
@@ -161,6 +163,7 @@ contains
     class(COMIO_T)                :: io
     character(len=*), intent(in)  :: dsetname
     integer,          intent(out) :: buffer(:,:,:)
+    buffer = 0
     io % err % rc = io % err % success
   end subroutine io_dataset_read_3d_int
 
@@ -170,6 +173,7 @@ contains
     class(COMIO_T)                :: io
     character(len=*), intent(in)  :: dsetname
     real(sp),         intent(out) :: buffer(:)
+    buffer = 0._sp
     io % err % rc = io % err % success
   end subroutine io_dataset_read_1d_sp
 
@@ -178,6 +182,7 @@ contains
     class(COMIO_T)                :: io
     character(len=*), intent(in)  :: dsetname
     real(sp),         intent(out) :: buffer(:,:)
+    buffer = 0._sp
     io % err % rc = io % err % success
   end subroutine io_dataset_read_2d_sp
 
@@ -186,6 +191,7 @@ contains
     class(COMIO_T)                :: io
     character(len=*), intent(in)  :: dsetname
     real(sp),         intent(out) :: buffer(:,:,:)
+    buffer = 0._sp
     io % err % rc = io % err % success
   end subroutine io_dataset_read_3d_sp
 
@@ -195,6 +201,7 @@ contains
     class(COMIO_T)                :: io
     character(len=*), intent(in)  :: dsetname
     real(dp),         intent(out) :: buffer(:)
+    buffer = 0._dp
     io % err % rc = io % err % success
   end subroutine io_dataset_read_1d_dp
 
@@ -203,6 +210,7 @@ contains
     class(COMIO_T)                :: io
     character(len=*), intent(in)  :: dsetname
     real(dp),         intent(out) :: buffer(:,:)
+    buffer = 0._dp
     io % err % rc = io % err % success
   end subroutine io_dataset_read_2d_dp
 
@@ -211,6 +219,7 @@ contains
     class(COMIO_T)                :: io
     character(len=*), intent(in)  :: dsetname
     real(dp),         intent(out) :: buffer(:,:,:)
+    buffer = 0._dp
     io % err % rc = io % err % success
   end subroutine io_dataset_read_3d_dp
 
