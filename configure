@@ -2250,6 +2250,8 @@ ac_configure="$SHELL $ac_aux_dir/configure"  # Please don't use this var.
 
 ac_config_commands="$ac_config_commands tests/atconfig"
 
+ac_config_files="$ac_config_files tests/run_comio"
+
 
 am__api_version='1.13'
 
@@ -6895,6 +6897,7 @@ for ac_config_target in $ac_config_targets
 do
   case $ac_config_target in
     "tests/atconfig") CONFIG_COMMANDS="$CONFIG_COMMANDS tests/atconfig" ;;
+    "tests/run_comio") CONFIG_FILES="$CONFIG_FILES tests/run_comio" ;;
     "depfiles") CONFIG_COMMANDS="$CONFIG_COMMANDS depfiles" ;;
     "Makefile") CONFIG_FILES="$CONFIG_FILES Makefile" ;;
     "src/Makefile") CONFIG_FILES="$CONFIG_FILES src/Makefile" ;;
@@ -7351,6 +7354,7 @@ AUTOTEST_PATH='tests'
 SHELL=\${CONFIG_SHELL-'$SHELL'}
 ATEOF
  ;;
+    "tests/run_comio":F) chmod +x tests/run_comio ;;
     "depfiles":C) test x"$AMDEP_TRUE" != x"" || {
   # Older Autoconf quotes --file arguments for eval, but not when files
   # are listed without --file.  Let's play safe and only enable the eval

@@ -1997,9 +1997,9 @@ at_xfail=no
 
 echo ">>> TEST PASSED" > expout
 { set +x
-$as_echo "$at_srcdir/testsuite.at:5: /usr/local/mpich/3.2.1/bin/mpiexec -n 4 ../../test_comio_hdf_int"
+$as_echo "$at_srcdir/testsuite.at:5: ../../run_comio ../../test_comio_hdf_int"
 at_fn_check_prepare_trace "testsuite.at:5"
-( $at_check_trace; /usr/local/mpich/3.2.1/bin/mpiexec -n 4 ../../test_comio_hdf_int
+( $at_check_trace; ../../run_comio ../../test_comio_hdf_int
 ) >>"$at_stdout" 2>>"$at_stderr" 5>&-
 at_status=$? at_failed=false
 $at_check_filter
@@ -2024,9 +2024,9 @@ at_xfail=no
 
 echo ">>> TEST PASSED" > expout
 { set +x
-$as_echo "$at_srcdir/testsuite.at:9: /usr/local/mpich/3.2.1/bin/mpiexec -n 4 ../../test_comio_hdf_flt"
+$as_echo "$at_srcdir/testsuite.at:9: ../../run_comio ../../test_comio_hdf_flt"
 at_fn_check_prepare_trace "testsuite.at:9"
-( $at_check_trace; /usr/local/mpich/3.2.1/bin/mpiexec -n 4 ../../test_comio_hdf_flt
+( $at_check_trace; ../../run_comio ../../test_comio_hdf_flt
 ) >>"$at_stdout" 2>>"$at_stderr" 5>&-
 at_status=$? at_failed=false
 $at_check_filter
@@ -2051,9 +2051,9 @@ at_xfail=no
 
 echo ">>> TEST PASSED" > expout
 { set +x
-$as_echo "$at_srcdir/testsuite.at:13: /usr/local/mpich/3.2.1/bin/mpiexec -n 4 ../../test_comio_hdf_dbl"
+$as_echo "$at_srcdir/testsuite.at:13: ../../run_comio ../../test_comio_hdf_dbl"
 at_fn_check_prepare_trace "testsuite.at:13"
-( $at_check_trace; /usr/local/mpich/3.2.1/bin/mpiexec -n 4 ../../test_comio_hdf_dbl
+( $at_check_trace; ../../run_comio ../../test_comio_hdf_dbl
 ) >>"$at_stdout" 2>>"$at_stderr" 5>&-
 at_status=$? at_failed=false
 $at_check_filter
@@ -2078,9 +2078,9 @@ at_xfail=no
 
 echo ">>> TEST PASSED" > expout
 { set +x
-$as_echo "$at_srcdir/testsuite.at:17: /usr/local/mpich/3.2.1/bin/mpiexec -n 4 ../../test_comio_pnc_int"
+$as_echo "$at_srcdir/testsuite.at:17: ../../run_comio ../../test_comio_pnc_int"
 at_fn_check_prepare_trace "testsuite.at:17"
-( $at_check_trace; /usr/local/mpich/3.2.1/bin/mpiexec -n 4 ../../test_comio_pnc_int
+( $at_check_trace; ../../run_comio ../../test_comio_pnc_int
 ) >>"$at_stdout" 2>>"$at_stderr" 5>&-
 at_status=$? at_failed=false
 $at_check_filter
@@ -2105,9 +2105,9 @@ at_xfail=no
 
 echo ">>> TEST PASSED" > expout
 { set +x
-$as_echo "$at_srcdir/testsuite.at:21: /usr/local/mpich/3.2.1/bin/mpiexec -n 4 ../../test_comio_pnc_flt"
+$as_echo "$at_srcdir/testsuite.at:21: ../../run_comio ../../test_comio_pnc_flt"
 at_fn_check_prepare_trace "testsuite.at:21"
-( $at_check_trace; /usr/local/mpich/3.2.1/bin/mpiexec -n 4 ../../test_comio_pnc_flt
+( $at_check_trace; ../../run_comio ../../test_comio_pnc_flt
 ) >>"$at_stdout" 2>>"$at_stderr" 5>&-
 at_status=$? at_failed=false
 $at_check_filter
@@ -2132,9 +2132,9 @@ at_xfail=no
 
 echo ">>> TEST PASSED" > expout
 { set +x
-$as_echo "$at_srcdir/testsuite.at:25: /usr/local/mpich/3.2.1/bin/mpiexec -n 4 ../../test_comio_pnc_dbl"
+$as_echo "$at_srcdir/testsuite.at:25: ../../run_comio ../../test_comio_pnc_dbl"
 at_fn_check_prepare_trace "testsuite.at:25"
-( $at_check_trace; /usr/local/mpich/3.2.1/bin/mpiexec -n 4 ../../test_comio_pnc_dbl
+( $at_check_trace; ../../run_comio ../../test_comio_pnc_dbl
 ) >>"$at_stdout" 2>>"$at_stderr" 5>&-
 at_status=$? at_failed=false
 $at_check_filter

@@ -7,6 +7,7 @@ AC_INIT([comio], [0.0.1], [ipe_devteam@noaa.gov])
 AC_CONFIG_AUX_DIR([build-aux])
 AC_CONFIG_MACRO_DIR([m4])
 AC_CONFIG_TESTDIR([tests])
+AC_CONFIG_FILES([tests/run_comio], [chmod +x tests/run_comio])
 
 AM_INIT_AUTOMAKE
 AM_MAINTAINER_MODE

@@ -81,7 +81,8 @@ check_PROGRAMS = $(am__EXEEXT_1) $(am__EXEEXT_2)
 @HAVE_PNETCDF_TRUE@am__append_2 = test_comio_pnc_int \
 @HAVE_PNETCDF_TRUE@	test_comio_pnc_flt test_comio_pnc_dbl
 subdir = tests
-DIST_COMMON = $(srcdir)/Makefile.in $(srcdir)/Makefile.am
+DIST_COMMON = $(srcdir)/Makefile.in $(srcdir)/Makefile.am \
+	$(srcdir)/run_comio.in
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/m4/ar-lib.m4 \
 	$(top_srcdir)/m4/ax_compiler_vendor.m4 \
@@ -91,7 +92,7 @@ am__aclocal_m4_deps = $(top_srcdir)/m4/ar-lib.m4 \
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
 mkinstalldirs = $(install_sh) -d
-CONFIG_CLEAN_FILES =
+CONFIG_CLEAN_FILES = run_comio
 CONFIG_CLEAN_VPATH_FILES =
 @HAVE_HDF5_TRUE@am__EXEEXT_1 = test_comio_hdf_int$(EXEEXT) \
 @HAVE_HDF5_TRUE@	test_comio_hdf_flt$(EXEEXT) \
@@ -379,6 +380,8 @@ $(top_srcdir)/configure: @MAINTAINER_MODE_TRUE@ $(am__configure_deps)
 $(ACLOCAL_M4): @MAINTAINER_MODE_TRUE@ $(am__aclocal_m4_deps)
 	cd $(top_builddir) && $(MAKE) $(AM_MAKEFLAGS) am--refresh
 $(am__aclocal_m4_deps):
+run_comio: $(top_builddir)/config.status $(srcdir)/run_comio.in
+	cd $(top_builddir) && $(SHELL) ./config.status $(subdir)/$@
 
 clean-checkPROGRAMS:
 	-test -z "$(check_PROGRAMS)" || rm -f $(check_PROGRAMS)
@@ -664,7 +667,7 @@ $(srcdir)/testsuite.at:
 		test_group_name=`$(GREP) test-group-name: '$(srcdir)'/$$file.F90 | cut -d: -f2-` ; \
 		echo "AT_SETUP([$$test_group_name])" && \
 		echo 'echo ">>> TEST PASSED" > expout' && \
-		echo "AT_CHECK([$(MPIRUN) ../../$$file],[],[expout],[ignore])" && \
+		echo "AT_CHECK([../../run_comio ../../$$file],[],[expout],[ignore])" && \
 		echo AT_CLEANUP ; \
 		done; \
 	} > $@

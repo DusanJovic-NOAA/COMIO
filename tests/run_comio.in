@@ -1,0 +1,10 @@
+#! /bin/sh
+#
+# @configure_input@
+#
+runcmd="@MPIRUN@"
+if test ${#} -gt 0 && ! test -z "${runcmd}" ; then
+  exec ${runcmd} $@
+else
+  exit 77
+fi

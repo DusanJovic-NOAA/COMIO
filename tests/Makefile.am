@@ -48,7 +48,7 @@ $(srcdir)/testsuite.at:
 		test_group_name=`$(GREP) test-group-name: '$(srcdir)'/$$file.F90 | cut -d: -f2-` ; \
 		echo "AT_SETUP([$$test_group_name])" && \
 		echo 'echo ">>> TEST PASSED" > expout' && \
-		echo "AT_CHECK([$(MPIRUN) ../../$$file],[],[expout],[ignore])" && \
+		echo "AT_CHECK([../../run_comio ../../$$file],[],[expout],[ignore])" && \
 		echo AT_CLEANUP ; \
 		done; \
 	} > $@
