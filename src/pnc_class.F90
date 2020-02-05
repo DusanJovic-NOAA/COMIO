@@ -37,88 +37,37 @@ module pnc_class
 
   contains
 
-    procedure :: build => io_initialize
-    procedure :: trash => io_finalize
+    procedure :: io_initialize
+    procedure :: io_finalize
 
-    procedure :: file_open    => io_file_open
-    procedure :: file_close   => io_file_close
-    procedure :: dset_build   => io_dataset_create
-    procedure :: dset_open    => io_dataset_open
-    procedure :: dset_close   => io_dataset_close
-    procedure :: grp_build    => io_group_create
-    procedure :: domain_set   => io_domain_set
-    procedure :: domain_clear => io_domain_clear
+    procedure :: io_file_open
+    procedure :: io_file_close
+    procedure :: io_domain_set
+    procedure :: io_pause
 
-    procedure :: pause        => io_pause
-
-    generic   :: dset_read    => io_dataset_read_1d_int, &
-                                 io_dataset_read_2d_int, &
-                                 io_dataset_read_3d_int, &
-                                 io_dataset_read_1d_sp,  &
-                                 io_dataset_read_2d_sp,  &
-                                 io_dataset_read_3d_sp,  &
-                                 io_dataset_read_1d_dp,  &
-                                 io_dataset_read_2d_dp,  &
-                                 io_dataset_read_3d_dp
-    generic   :: dset_write   => io_dataset_write_1d_int, &
-                                 io_dataset_write_2d_int, &
-                                 io_dataset_write_3d_int, &
-                                 io_dataset_write_1d_sp,  &
-                                 io_dataset_write_2d_sp,  &
-                                 io_dataset_write_3d_sp,  &
-                                 io_dataset_write_1d_dp,  &
-                                 io_dataset_write_2d_dp,  &
-                                 io_dataset_write_3d_dp
+    procedure :: io_dataset_read_1d_int, &
+                 io_dataset_read_2d_int, &
+                 io_dataset_read_3d_int, &
+                 io_dataset_read_1d_sp,  &
+                 io_dataset_read_2d_sp,  &
+                 io_dataset_read_3d_sp,  &
+                 io_dataset_read_1d_dp,  &
+                 io_dataset_read_2d_dp,  &
+                 io_dataset_read_3d_dp
+    procedure :: io_dataset_write_1d_int, &
+                 io_dataset_write_2d_int, &
+                 io_dataset_write_3d_int, &
+                 io_dataset_write_1d_sp,  &
+                 io_dataset_write_2d_sp,  &
+                 io_dataset_write_3d_sp,  &
+                 io_dataset_write_1d_dp,  &
+                 io_dataset_write_2d_dp,  &
+                 io_dataset_write_3d_dp
 
     procedure :: fs_itype_get => io_filespace_int_datatype_get
     procedure :: fs_ftype_get => io_filespace_fp_datatype_get
     procedure :: ms_ftype_get => io_memspace_fp_datatype_get
     procedure :: ms_itype_get => io_memspace_int_datatype_get
-
-    procedure, private :: io_initialize
-    procedure, private :: io_finalize
-
-    procedure, private :: io_file_open
-    procedure, private :: io_file_close
-    procedure, private :: io_domain_set
-    procedure, private :: io_pause
-
-    procedure, private :: io_read_1d_int, &
-                          io_read_2d_int, &
-                          io_read_3d_int, &
-                          io_read_1d_sp,  &
-                          io_read_2d_sp,  &
-                          io_read_3d_sp,  &
-                          io_read_1d_dp,  &
-                          io_read_2d_dp,  &
-                          io_read_3d_dp
-    procedure, private :: io_write_1d_int, &
-                          io_write_2d_int, &
-                          io_write_3d_int, &
-                          io_write_1d_sp,  &
-                          io_write_2d_sp,  &
-                          io_write_3d_sp,  &
-                          io_write_1d_dp,  &
-                          io_write_2d_dp,  &
-                          io_write_3d_dp
-    procedure, private :: io_dataset_read_1d_int, &
-                          io_dataset_read_2d_int, &
-                          io_dataset_read_3d_int, &
-                          io_dataset_read_1d_sp,  &
-                          io_dataset_read_2d_sp,  &
-                          io_dataset_read_3d_sp,  &
-                          io_dataset_read_1d_dp,  &
-                          io_dataset_read_2d_dp,  &
-                          io_dataset_read_3d_dp
-    procedure, private :: io_dataset_write_1d_int, &
-                          io_dataset_write_2d_int, &
-                          io_dataset_write_3d_int, &
-                          io_dataset_write_1d_sp,  &
-                          io_dataset_write_2d_sp,  &
-                          io_dataset_write_3d_sp,  &
-                          io_dataset_write_1d_dp,  &
-                          io_dataset_write_2d_dp,  &
-                          io_dataset_write_3d_dp
 
   end type PNC_IO_T
 

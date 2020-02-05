@@ -10,7 +10,7 @@ module comio
   integer, parameter :: COMIO_FMT_HDF5    = 1, &
                         COMIO_FMT_PNETCDF = 2
 
-  interface comio_t
+  interface COMIO_T
     module procedure comio_constructor
   end interface
 
@@ -90,6 +90,5 @@ contains
     call this % startup(comm=comm, info=info)
     if (this % err % check(msg="Failed to initialize I/O")) return
   end subroutine comio_create
-  
   
 end module comio
