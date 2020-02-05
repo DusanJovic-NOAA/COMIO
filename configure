@@ -5447,12 +5447,10 @@ PnetCDF support is being disabled (equivalent to --with-pnetcdf=no).
         { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes (version $PNETCDF_VERSION)" >&5
 $as_echo "yes (version $PNETCDF_VERSION)" >&6; }
 
-                ax_lib_pnetcdf_save_CC=$CC
-        ax_lib_pnetcdf_save_CPPFLAGS=$CPPFLAGS
+                ax_lib_pnetcdf_save_CPPFLAGS=$CPPFLAGS
         ax_lib_pnetcdf_save_CPP=$CPP
         ax_lib_pnetcdf_save_LIBS=$LIBS
         ax_lib_pnetcdf_save_LDFLAGS=$LDFLAGS
-        CC=$PNETCDF_CC
         CFLAGS=$PNETCDF_CFLAGS
         CPPFLAGS=$PNETCDF_CPPFLAGS
         LIBS=$PNETCDF_LIBS
@@ -5513,7 +5511,6 @@ fi
 $as_echo "$as_me: WARNING: Unable to compile PnetCDF test program" >&2;}
         fi
 
-        CC=$ax_lib_pnetcdf_save_CC
         CFLAGS=$ax_lib_pnetcdf_save_CFLAGS
         CPP=$ax_lib_pnetcdf_save_CPP
         CPPFLAGS=$ax_lib_pnetcdf_save_CPPFLAGS

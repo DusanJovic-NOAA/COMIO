@@ -156,12 +156,10 @@ PnetCDF support is being disabled (equivalent to --with-pnetcdf=no).
         AC_MSG_RESULT([yes (version $[PNETCDF_VERSION])])
 
         dnl See if we can compile
-        ax_lib_pnetcdf_save_CC=$CC
         ax_lib_pnetcdf_save_CPPFLAGS=$CPPFLAGS
         ax_lib_pnetcdf_save_CPP=$CPP
         ax_lib_pnetcdf_save_LIBS=$LIBS
         ax_lib_pnetcdf_save_LDFLAGS=$LDFLAGS
-        CC=$PNETCDF_CC
         CFLAGS=$PNETCDF_CFLAGS
         CPPFLAGS=$PNETCDF_CPPFLAGS
         LIBS=$PNETCDF_LIBS
@@ -174,7 +172,6 @@ PnetCDF support is being disabled (equivalent to --with-pnetcdf=no).
             AC_MSG_WARN([Unable to compile PnetCDF test program])
         fi
 
-        CC=$ax_lib_pnetcdf_save_CC
         CFLAGS=$ax_lib_pnetcdf_save_CFLAGS
         CPP=$ax_lib_pnetcdf_save_CPP
         CPPFLAGS=$ax_lib_pnetcdf_save_CPPFLAGS
