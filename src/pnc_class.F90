@@ -1,6 +1,6 @@
 module pnc_class
 
-#if HAVE_PNETCDF
+#ifdef HAVE_PNETCDF
   
   use mpi, only: MPI_COMM_WORLD, MPI_INFO_NULL, MPI_OFFSET_KIND
   use pnetcdf

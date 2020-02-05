@@ -1,6 +1,6 @@
 module hdf_class
 
-#if HAVE_HDF5
+#ifdef HAVE_HDF5
   
   use comio_class
   use hdf5
