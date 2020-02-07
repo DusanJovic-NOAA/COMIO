@@ -625,6 +625,8 @@ ac_subst_vars='am__EXEEXT_FALSE
 am__EXEEXT_TRUE
 LTLIBOBJS
 LIBOBJS
+HAS_PNETCDF
+HAS_HDF5
 HAVE_PNETCDF_FALSE
 HAVE_PNETCDF_TRUE
 HAVE_HDF5_FALSE
@@ -2251,6 +2253,8 @@ ac_configure="$SHELL $ac_aux_dir/configure"  # Please don't use this var.
 ac_config_commands="$ac_config_commands tests/atconfig"
 
 ac_config_files="$ac_config_files tests/run_comio"
+
+ac_config_files="$ac_config_files utils/comio-config"
 
 
 am__api_version='1.13'
@@ -6133,6 +6137,12 @@ else
 fi
 
 
+# Set comio-config flags
+HAS_HDF5=$with_hdf5
+
+HAS_PNETCDF=$with_pnetcdf
+
+
 # Output Makefiles
 ac_config_files="$ac_config_files Makefile src/Makefile tests/Makefile"
 
@@ -6895,6 +6905,7 @@ do
   case $ac_config_target in
     "tests/atconfig") CONFIG_COMMANDS="$CONFIG_COMMANDS tests/atconfig" ;;
     "tests/run_comio") CONFIG_FILES="$CONFIG_FILES tests/run_comio" ;;
+    "utils/comio-config") CONFIG_FILES="$CONFIG_FILES utils/comio-config" ;;
     "depfiles") CONFIG_COMMANDS="$CONFIG_COMMANDS depfiles" ;;
     "Makefile") CONFIG_FILES="$CONFIG_FILES Makefile" ;;
     "src/Makefile") CONFIG_FILES="$CONFIG_FILES src/Makefile" ;;
@@ -7352,6 +7363,7 @@ SHELL=\${CONFIG_SHELL-'$SHELL'}
 ATEOF
  ;;
     "tests/run_comio":F) chmod +x tests/run_comio ;;
+    "utils/comio-config":F) chmod +x utils/comio-config ;;
     "depfiles":C) test x"$AMDEP_TRUE" != x"" || {
   # Older Autoconf quotes --file arguments for eval, but not when files
   # are listed without --file.  Let's play safe and only enable the eval

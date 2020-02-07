@@ -1,0 +1,142 @@
+#! /bin/sh
+#
+# Configuration utility script providing
+# installation settings for the COMIO library
+#
+# @configure_input@
+
+# installation paths
+prefix=@prefix@
+exec_prefix=@exec_prefix@
+bindir=@bindir@
+includedir=@includedir@
+libdir=@libdir@
+
+# compile settings
+fc="@FC@"
+fcflags="@FCFLAGS@"
+has_hdf5="@HAS_HDF5@"
+has_hdf5="${has_hdf5:-no}"
+has_pnetcdf="@HAS_PNETCDF@"
+has_pnetcdf="${has_pnetcdf:-no}"
+fclibs="@LDFLAGS@ @LIBS@"
+version="@PACKAGE_NAME@ @PACKAGE_VERSION@"
+
+usage()
+{
+    cat <<EOF
+Usage: ${0##*/} [OPTION]
+
+Available values for OPTION include:
+
+  --help        display this help message and exit
+  --all         display all options
+  --fc          Fortran compiler
+  --fcflags     flags needed to compile a Fortran program
+  --fclibs      libraries needed to link a Fortran program
+  --has-hdf5    whether HDF5 I/O is enabled
+  --has-pnetcdf whether PnetCDF I/O is enabled
+  --prefix      Install prefix
+  --bindir      Executables directory
+  --includedir  Include directory
+  --libdir      Library directory
+  --version     Library version
+
+EOF
+
+    exit $1
+}
+
+all()
+{
+        echo
+        echo "This $version has been built with the following features: "
+        echo
+        echo "  --fc          -> $fc"
+        echo "  --fcflags     -> $fcflags"
+        echo "  --fclibs      -> $fclibs"
+        echo
+        echo "  --has-hdf5    -> $has_hdf5"
+        echo "  --has-pnetcdf -> $has_pnetcdf"
+	echo
+        echo "  --prefix      -> $prefix"
+        echo "  --bindir      -> $bindir"
+        echo "  --includedir  -> $includedir"
+        echo "  --libdir      -> $libdir"
+        echo "  --version     -> $version"
+        echo
+}
+
+if test $# -eq 0; then
+    usage 1
+fi
+
+while test $# -gt 0; do
+    case "$1" in
+    # this deals with options in the style
+    # --option=value and extracts the value part
+    # [not currently used]
+    -*=*) value=`echo "$1" | sed 's/[-_a-zA-Z0-9]*=//'` ;;
+    *) value= ;;
+    esac
+
+    case "$1" in
+
+    --help)
+	usage 0
+	;;
+
+    --all)
+	all
+	;;
+
+    --fc)
+	echo $fc
+	;;
+
+    --fcflags)
+	echo $fcflags
+	;;
+
+    --fclibs)
+       	echo $fclibs
+       	;;
+
+    --has-hdf5)
+       	echo $has_hdf5
+       	;;
+
+    --has-pnetcdf)
+       	echo $has_pnetcdf
+       	;;
+
+    --prefix)
+       	echo "${prefix}"
+       	;;
+
+    --bindir)
+       	echo "${bindir}"
+       	;;
+
+    --includedir)
+       	echo "${includedir}"
+       	;;
+
+    --libdir)
+       	echo "${libdir}"
+       	;;
+
+    --version)
+	echo $version
+	;;
+
+    *)
+        echo "unknown option: $1"
+	usage
+	exit 1
+	;;
+    esac
+    shift
+done
+
+exit 0

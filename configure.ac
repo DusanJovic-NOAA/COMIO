@@ -8,6 +8,7 @@ AC_CONFIG_AUX_DIR([build-aux])
 AC_CONFIG_MACRO_DIR([m4])
 AC_CONFIG_TESTDIR([tests])
 AC_CONFIG_FILES([tests/run_comio], [chmod +x tests/run_comio])
+AC_CONFIG_FILES([utils/comio-config], [chmod +x utils/comio-config])
 
 AM_INIT_AUTOMAKE
 AM_MAINTAINER_MODE
@@ -210,6 +211,10 @@ AM_PROG_AR
 # Set Automake conditionals for test suite
 AM_CONDITIONAL([HAVE_HDF5],    [test x$with_hdf5 = xyes])
 AM_CONDITIONAL([HAVE_PNETCDF], [test x$with_pnetcdf = xyes])
+
+# Set comio-config flags
+AC_SUBST([HAS_HDF5],    [$with_hdf5])
+AC_SUBST([HAS_PNETCDF], [$with_pnetcdf])
 
 # Output Makefiles
 AC_CONFIG_FILES([Makefile
