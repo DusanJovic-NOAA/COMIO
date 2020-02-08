@@ -213,6 +213,7 @@ AM_CONDITIONAL([HAVE_HDF5],    [test x$with_hdf5 = xyes])
 AM_CONDITIONAL([HAVE_PNETCDF], [test x$with_pnetcdf = xyes])
 
 # Set comio-config flags
+AC_SUBST([DEP_FC_INC],  [$fc_inc])
 AC_SUBST([HAS_HDF5],    [$with_hdf5])
 AC_SUBST([HAS_PNETCDF], [$with_pnetcdf])
 

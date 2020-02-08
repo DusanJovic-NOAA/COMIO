@@ -14,12 +14,12 @@ libdir=@libdir@
 
 # compile settings
 fc="@FC@"
-fcflags="@FCFLAGS@"
+fflags="@FC_MODINC@${includedir} @DEP_FC_INC@"
 has_hdf5="@HAS_HDF5@"
 has_hdf5="${has_hdf5:-no}"
 has_pnetcdf="@HAS_PNETCDF@"
 has_pnetcdf="${has_pnetcdf:-no}"
-fclibs="@LDFLAGS@ @LIBS@"
+flibs="-L${libdir} @LDFLAGS@ -lcomio @LIBS@"
 version="@PACKAGE_NAME@ @PACKAGE_VERSION@"
 
 usage()
@@ -32,8 +32,8 @@ Available values for OPTION include:
   --help        display this help message and exit
   --all         display all options
   --fc          Fortran compiler
-  --fcflags     flags needed to compile a Fortran program
-  --fclibs      libraries needed to link a Fortran program
+  --fflags      flags needed to compile a Fortran program
+  --flibs       libraries needed to link a Fortran program
   --has-hdf5    whether HDF5 I/O is enabled
   --has-pnetcdf whether PnetCDF I/O is enabled
   --prefix      Install prefix
@@ -53,8 +53,8 @@ all()
         echo "This $version has been built with the following features: "
         echo
         echo "  --fc          -> $fc"
-        echo "  --fcflags     -> $fcflags"
-        echo "  --fclibs      -> $fclibs"
+        echo "  --fflags      -> $fflags"
+        echo "  --flibs       -> $flibs"
         echo
         echo "  --has-hdf5    -> $has_hdf5"
         echo "  --has-pnetcdf -> $has_pnetcdf"
@@ -94,12 +94,12 @@ while test $# -gt 0; do
 	echo $fc
 	;;
 
-    --fcflags)
-	echo $fcflags
+    --fflags)
+	echo $fflags
 	;;
 
-    --fclibs)
-       	echo $fclibs
+    --flibs)
+        echo $flibs
        	;;
 
     --has-hdf5)
