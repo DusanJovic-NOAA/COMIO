@@ -5111,14 +5111,17 @@ $as_echo "$H5FC" >&6; }
             with_hdf5_fortran="yes"
 
 
+                        HDF5_FC=$(eval $H5FC -showconfig | $GREP 'Fortran Compiler:' \
+                | $AWK '{print $3}')
+
                         for arg in `$H5FC -show`
             do
               case "$arg" in #(
                 -I*) echo $HDF5_FFLAGS | $GREP -e "$arg" >/dev/null \
                       || HDF5_FFLAGS="$HDF5_FFLAGS $arg"
                   ;;#(
-                -L*) echo $HDF5_FFLAGS | $GREP -e "$arg" >/dev/null \
-                      || HDF5_FFLAGS="$HDF5_FFLAGS $arg"
+                -L*) echo $HDF5_LDFLAGS | $GREP -e "$arg" >/dev/null \
+                      || HDF5_LDFLAGS="$HDF5_LDFLAGS $arg"
                                                                echo $HDF5_FFLAGS | $GREP -e "-I${arg#-L}" >/dev/null \
                       || HDF5_FFLAGS="$HDF5_FFLAGS -I${arg#-L}"
                   ;;

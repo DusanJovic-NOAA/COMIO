@@ -82,13 +82,14 @@
 #
 #   Copyright (c) 2009 Timothy Brown <tbrown@freeshell.org>
 #   Copyright (c) 2010 Rhys Ulerich <rhys.ulerich@gmail.com>
+#   Copyright (c) 2020 Raffaele Montuoro <raffaele.montuoro@noaa.gov>
 #
 #   Copying and distribution of this file, with or without modification, are
 #   permitted in any medium without royalty provided the copyright notice
 #   and this notice are preserved. This file is offered as-is, without any
 #   warranty.
 
-#serial 19
+#serial 20
 
 AC_DEFUN([AX_LIB_HDF5], [
 
@@ -273,6 +274,10 @@ HDF5 support is being disabled (equivalent to --with-hdf5=no).
             with_hdf5_fortran="yes"
             AC_SUBST([H5FC])
 
+            dnl Get Fortran compiler used
+            HDF5_FC=$(eval $H5FC -showconfig | $GREP 'Fortran Compiler:' \
+                | $AWK '{print $[]3}')
+
             dnl Again, pry any remaining -Idir/-Ldir from compiler wrapper
             for arg in `$H5FC -show`
             do
@@ -280,8 +285,8 @@ HDF5 support is being disabled (equivalent to --with-hdf5=no).
                 -I*) echo $HDF5_FFLAGS | $GREP -e "$arg" >/dev/null \
                       || HDF5_FFLAGS="$HDF5_FFLAGS $arg"
                   ;;#(
-                -L*) echo $HDF5_FFLAGS | $GREP -e "$arg" >/dev/null \
-                      || HDF5_FFLAGS="$HDF5_FFLAGS $arg"
+                -L*) echo $HDF5_LDFLAGS | $GREP -e "$arg" >/dev/null \
+                      || HDF5_LDFLAGS="$HDF5_LDFLAGS $arg"
                      dnl HDF5 installs .mod files in with libraries,
                      dnl but some compilers need to find them with -I
                      echo $HDF5_FFLAGS | $GREP -e "-I${arg#-L}" >/dev/null \
