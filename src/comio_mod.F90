@@ -1,5 +1,6 @@
 module comio
 
+  use mpi, only : MPI_INFO_NULL
   use comio_class
   use hdf_class
   use pnc_class
@@ -29,6 +30,7 @@ contains
     integer, optional, intent(in) :: comm
     integer, optional, intent(in) :: info
     ! -- local variables
+    integer                 :: linfo
     class(COMIO_T), pointer :: this
     type (IOERR_T)          :: err
     ! -- begin
@@ -54,7 +56,9 @@ contains
         return
     end select
     ! -- initialize I/O layer
-    call this % startup(comm=comm, info=info)
+    linfo = MPI_INFO_NULL
+    if (present(info)) linfo = info
+    call this % startup(comm=comm, info=linfo)
     if (this % err % check(msg="Failed to initialize I/O")) return
   end function comio_constructor
 
@@ -64,6 +68,7 @@ contains
     integer, optional, intent(in) :: comm
     integer, optional, intent(in) :: info
     ! -- local variables
+    integer        :: linfo
     type (IOERR_T) :: err
     ! -- begin
     select case (fmt)
@@ -87,7 +92,9 @@ contains
         return
     end select
     ! -- initialize I/O layer
-    call this % startup(comm=comm, info=info)
+    linfo = MPI_INFO_NULL
+    if (present(info)) linfo = info
+    call this % startup(comm=comm, info=linfo)
     if (this % err % check(msg="Failed to initialize I/O")) return
   end subroutine comio_create
   
