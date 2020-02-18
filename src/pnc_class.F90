@@ -118,10 +118,6 @@ contains
     call io_file_close(io)
     if (io % err % check(line=__LINE__)) return
 
-    ! -- free up data decomposition memory
-    call io_domain_clear(io)
-    if (io % err % check(line=__LINE__)) return
-
   end subroutine io_shutdown
 
   ! -- File access APIs
@@ -179,6 +175,10 @@ contains
       io % readonly = .false.
 
     end if
+
+    ! -- free up data decomposition memory
+    call io_domain_clear(io)
+    if (io % err % check(line=__LINE__)) return
 
   end subroutine io_file_close
 

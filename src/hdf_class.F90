@@ -187,10 +187,6 @@ contains
       io % memspace = H5S_ALL_F
     end if
 
-    ! -- close open file
-    call io_file_close(io)
-    if (io % err % check(line=__LINE__)) return
-
     ! -- shut down HDF5
     call io_shutdown(io)
     if (io % err % check(line=__LINE__)) return
@@ -200,12 +196,12 @@ contains
   subroutine io_shutdown(io)
     class(HDF5_IO_T) :: io
 
-    ! -- close HDF5
-    call h5close_f(io % err % rc)
+    ! -- close open file
+    call io_file_close(io)
     if (io % err % check(line=__LINE__)) return
 
-    ! -- free up data decomposition memory
-    call io_domain_clear(io)
+    ! -- close HDF5
+    call h5close_f(io % err % rc)
     if (io % err % check(line=__LINE__)) return
 
   end subroutine io_shutdown
@@ -286,6 +282,10 @@ contains
       io % file_id = -1
 
     end if
+
+    ! -- free up data decomposition memory
+    call io_domain_clear(io)
+    if (io % err % check(line=__LINE__)) return
 
   end subroutine io_file_close
 
