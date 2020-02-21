@@ -386,6 +386,24 @@ contains
 
   ! -- Datasets APIs
 
+  logical function io_dataset_inquire(io, dsetname)
+    class(HDF5_IO_T)             :: io
+    character(len=*), intent(in) :: dsetname
+
+    integer :: rc
+
+    ! -- begin
+    io_dataset_inquire = .false.
+
+    ! -- check if file is open
+    if (io % file_id /= -1) then
+      ! -- dataset exists if link resolves to actual object
+      call h5lexists_f(io % file_id, dsetname, &
+        io_dataset_inquire, rc)
+    end if
+
+  end function io_dataset_inquire
+
   subroutine io_dataset_create(io, dsetname, dsettype, fdims, mstart, mcount)
     class(HDF5_IO_T)              :: io
     character(len=*),  intent(in) :: dsetname
@@ -402,15 +420,22 @@ contains
       if (io % err % check(line=__LINE__)) return
     end if
 
-    ! -- select hyperslab for data I/O
-    call h5sselect_hyperslab_f(io % filespace, H5S_SELECT_SET_F, &
-      io % mstart, io % mcount, io % err % rc)
-    if (io % err % check(line=__LINE__)) return
+    ! -- check if dataset exists
+    if (io_dataset_inquire(io, dsetname)) then
+      ! -- open dataset if present
+      call io_dataset_open(io, dsetname)
+      if (io % err % check(line=__LINE__)) return
+    else
+      ! -- select hyperslab for data I/O
+      call h5sselect_hyperslab_f(io % filespace, H5S_SELECT_SET_F, &
+        io % mstart, io % mcount, io % err % rc)
+      if (io % err % check(line=__LINE__)) return
 
-    ! -- create dataset
-    call h5dcreate_f(io % file_id, dsetname, dsettype, io % filespace, &
-      io % dset_id, io % err % rc, dcpl_id = io % dcrt_plist_id)
-    if (io % err % check(line=__LINE__)) return
+      ! -- create dataset
+      call h5dcreate_f(io % file_id, dsetname, dsettype, io % filespace, &
+        io % dset_id, io % err % rc, dcpl_id = io % dcrt_plist_id)
+      if (io % err % check(line=__LINE__)) return
+    end if
 
   end subroutine io_dataset_create
 

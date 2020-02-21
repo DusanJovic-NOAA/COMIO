@@ -386,6 +386,25 @@ contains
 
   ! -- Datasets APIs
 
+  logical function io_dataset_inquire(io, dsetname)
+    class(PNC_IO_T)              :: io
+    character(len=*), intent(in) :: dsetname
+
+    integer :: dset_id
+    integer :: rc
+
+    ! -- begin
+    io_dataset_inquire = .false.
+
+    ! -- check if file is open
+    if (io % file_id /= -1) then
+      ! -- test if dataset exists by inquiring for the variable id
+      rc = nf90mpi_inq_varid(io % file_id, dsetname, dset_id)
+      io_dataset_inquire = (rc == NF90_NOERR)
+    end if
+
+  end function io_dataset_inquire
+
   subroutine io_dataset_create(io, dsetname, dsettype, fdims, mstart, mcount)
     class(PNC_IO_T)               :: io
     character(len=*),  intent(in) :: dsetname
@@ -402,16 +421,22 @@ contains
       if (io % err % check(line=__LINE__)) return
     end if
 
-    ! -- create dataset
-    io % err % rc = nf90mpi_redef(io % file_id)
-    if (io % err % check(msg=nf90mpi_strerror(io % err % rc), line=__LINE__)) return
+    ! -- check if dataset exists
+    if (io_dataset_inquire(io, dsetname)) then
+      call io_dataset_open(io, dsetname)
+      if (io % err % check(line=__LINE__)) return
+    else
+      ! -- create dataset
+      io % err % rc = nf90mpi_redef(io % file_id)
+      if (io % err % check(msg=nf90mpi_strerror(io % err % rc), line=__LINE__)) return
 
-    io % err % rc = nf90mpi_def_var(io % file_id, dsetname, dsettype, &
-      io % fdim_id, io % dset_id)
-    if (io % err % check(msg=nf90mpi_strerror(io % err % rc), line=__LINE__)) return
+      io % err % rc = nf90mpi_def_var(io % file_id, dsetname, dsettype, &
+        io % fdim_id, io % dset_id)
+      if (io % err % check(msg=nf90mpi_strerror(io % err % rc), line=__LINE__)) return
 
-    io % err % rc = nf90mpi_enddef(io % file_id)
-    if (io % err % check(msg=nf90mpi_strerror(io % err % rc), line=__LINE__)) return
+      io % err % rc = nf90mpi_enddef(io % file_id)
+      if (io % err % check(msg=nf90mpi_strerror(io % err % rc), line=__LINE__)) return
+    end if
 
   end subroutine io_dataset_create
 
