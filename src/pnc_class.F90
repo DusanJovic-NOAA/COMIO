@@ -98,7 +98,7 @@ contains
     if (present(comm)) io % comm = comm
 
     ! -- store MPI info handle if provided
-    if (present(comm)) io % info = info
+    if (present(info)) io % info = info
 
   end subroutine io_initialize
 
