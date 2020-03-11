@@ -260,7 +260,8 @@ contains
     class(PNC_IO_T)  :: io
 
     logical                       :: next
-    integer                       :: err, i, item, offset
+    integer                       :: item
+    integer                       :: dimid, ndims, nfdims
     integer, allocatable          :: dimids(:)
     integer(kind=MPI_OFFSET_KIND) :: length
     character(len=3)              :: label
@@ -277,96 +278,44 @@ contains
     ! -- check if file is opened as  only
     if (io % readonly) return
 
-    ! -- define dimensions on file
-    offset = 0
+    ! -- check dimensions on file
+    io % err % rc = nf90mpi_inquire(io % file_id, nDimensions = ndims)
+    if (io % err % check(msg=nf90mpi_strerror(io % err % rc), &
+      line=__LINE__)) return
+
     if (associated(io % fdim_id)) then
-      offset = size(io % fdim_id)
-      ! -- check if dimensions exist
-      if (offset == size(io % fdims)) then
-        item = 0
-        next = .true.
-        do while ((item < offset) .and. next)
-          item = item + 1
-          err = nf90mpi_inquire_dimension(io % file_id, io % fdim_id(item), len=length)
-          next = (err == NF90_NOERR) .and. (length == io % fdims(item))
-        end do
-        ! -- return if domain already exists in file
-        if (next) return
-      end if
       deallocate(io % fdim_id, stat = io % err % rc)
       if (io % err % check(line=__LINE__, msg="Unable to free memory")) return
       nullify(io % fdim_id)
-    else
-      io % err % rc = nf90mpi_inquire(io % file_id, nDimensions = offset)
+    end if
+
+    nfdims = size(io % fdims)
+    allocate(io % fdim_id(nfdims), stat = io % err % rc)
+    if (io % err % check(line=__LINE__, msg="Unable to allocate memory")) return
+
+    io % fdim_id = -1
+
+    do dimid = 1, ndims
+      io % err % rc = nf90mpi_inquire_dimension(io % file_id, dimid, len=length)
       if (io % err % check(msg=nf90mpi_strerror(io % err % rc), &
         line=__LINE__)) return
-
-      if (offset >= size(io % fdims)) then
-        allocate(dimids(offset), stat = io % err % rc)
-        if (io % err % check(line=__LINE__, msg="Unable to allocate memory")) return
-        do item = 1, offset
-          write(label, '("x",i2.2)') item
-          io % err % rc = nf90mpi_inq_dimid(io % file_id, label, dimids(item))
-          if (io % err % check(msg=nf90mpi_strerror(io % err % rc), &
-            line=__LINE__)) return
-          io % err % rc = nf90mpi_inquire_dimension(io % file_id, dimids(item), len=length)
-          if (io % err % check(msg=nf90mpi_strerror(io % err % rc), &
-            line=__LINE__)) return
-          do i = 1, size(io % fdims)
-            if (length == io % fdims(i)) then
-              io % fdims(i) = -io % fdims(i)
-              dimids(item)  = -dimids(item)
-              exit
-            end if
-          end do
-        end do
-
-        if (any(io % fdims < 0)) then
-          ! -- all dimensions are on file, just  their ids
-          allocate(io % fdim_id(size(io % fdims)), stat = io % err % rc)
-          if (io % err % check(line=__LINE__, msg="Unable to allocate memory")) return
-          io % fdim_id = io % fdims
-          do item = 1, offset
-            if (dimids(item) < 0) then
-              do i = 1, size(io % fdims)
-                if (io % fdim_id(i) < 0) then
-                  io % fdim_id(i) = -dimids(item)
-                  dimids(item) = -dimids(item)
-                  exit
-                end if
-              end do
-            end if
-          end do
-        end if
-        deallocate(dimids, stat = io % err % rc)
-        if (io % err % check(line=__LINE__, msg="Unable to free memory")) return
-        ! -- return
-        if (all(io % fdims < 0)) then
-          io % fdims = -io % fdims
-          return
-        end if
-      end if
-    end if
-
-    ! -- dimensions not found on file, so add them
-    if (.not.associated(io % fdim_id)) then
-      allocate(io % fdim_id(size(io % fdims)), stat = io % err % rc)
-      if (io % err % check(line=__LINE__, msg="Unable to allocate memory")) return
-    end if
+      do item = 1, nfdims
+        if (io % fdims(item) == length) io % fdim_id(item) = dimid
+      end do
+    end do
 
     io % err % rc = nf90mpi_redef(io % file_id)
     if (io % err % check(msg=nf90mpi_strerror(io % err % rc), line=__LINE__)) return
 
-    i = 0
-    do item = 1, size(io % fdims)
-      if (io % fdims(item) > 0) then
-        i = i + 1
-        write(label, '("x",i2.2)') i + offset
+    ! -- add dimensions not found on file
+    dimid = ndims
+    do item = 1, nfdims
+      if (io % fdim_id(item) < 0) then
+        dimid = dimid + 1
+        write(label, '("x",i2.2)') dimid
         io % err % rc = nf90mpi_def_dim(io % file_id, label, io % fdims(item), &
           io % fdim_id(item))        
         if (io % err % check(msg=nf90mpi_strerror(io % err % rc), line=__LINE__)) return
-      else
-        io % fdims(item) = -io % fdims(item)
       end if
     end do
 
@@ -374,6 +323,7 @@ contains
     if (io % err % check(msg=nf90mpi_strerror(io % err % rc), line=__LINE__)) return
 
   end subroutine io_domain_write
+
   ! -- Groups APIs
 
   subroutine io_group_create(io, grpname)
