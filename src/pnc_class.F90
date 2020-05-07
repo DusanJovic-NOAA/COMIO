@@ -131,7 +131,7 @@ contains
 
     select case (mode)
       case ("c", "C")
-        io % cmode = IOR(NF90_CLOBBER, NF90_64BIT_DATA)
+        io % cmode = IOR(NF90_CLOBBER, NF90_64BIT_OFFSET)
         io % err % rc = nf90mpi_create(io % comm, filename, &
           io % cmode, io % info, io % file_id)
         if (io % err % check(msg=nf90mpi_strerror(io % err % rc), &
