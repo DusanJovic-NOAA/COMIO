@@ -5531,10 +5531,16 @@ $as_echo_n "checking for PnetCDF Fortran support... " >&6; }
         if test "x$with_pnetcdf_fortran" != "xyes"; then
             with_pnetcdf_fortran="no"
         else
-            PNETCDF_FC=$(eval $PNETCDF_CONFIG --fc | $AWK '{print $1}')
-            if test "$PNETCDF_FC" = "ccache"; then
-                PNETCDF_FC=$(eval $PNETCDF_CONFIG --fc | $AWK '{print $2}')
-            fi
+                        for arg in f90 fc ; do
+                pnetcdf_fc=$(eval $PNETCDF_CONFIG --$arg | $AWK '{print $1}')
+                if test "$pnetcdf_fc" = "ccache"; then
+                    pnetcdf_fc=$(eval $PNETCDF_CONFIG --$arg | $AWK '{print $2}')
+                fi
+                if test -x "$pnetcdf_fc" ; then
+                  PNETCDF_FC=$pnetcdf_fc
+                  break
+                fi
+            done
                         PNETCDF_FFLAGS=$PNETCDF_CPPFLAGS
 
                         PNETCDF_FLIBS=$PNETCDF_LIBS

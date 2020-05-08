@@ -183,10 +183,17 @@ PnetCDF support is being disabled (equivalent to --with-pnetcdf=no).
         if test "x$with_pnetcdf_fortran" != "xyes"; then
             with_pnetcdf_fortran="no"
         else
-            PNETCDF_FC=$(eval $PNETCDF_CONFIG --fc | $AWK '{print $[]1}')
-            if test "$PNETCDF_FC" = "ccache"; then
-                PNETCDF_FC=$(eval $PNETCDF_CONFIG --fc | $AWK '{print $[]2}')
-            fi
+            dnl Look for Fortran 90 compiler
+            for arg in f90 fc ; do
+                pnetcdf_fc=$(eval $PNETCDF_CONFIG --$arg | $AWK '{print $[]1}')
+                if test "$pnetcdf_fc" = "ccache"; then
+                    pnetcdf_fc=$(eval $PNETCDF_CONFIG --$arg | $AWK '{print $[]2}')
+                fi
+                if test -x "$pnetcdf_fc" ; then
+                  PNETCDF_FC=$pnetcdf_fc
+                  break
+                fi
+            done
             dnl Look for the FFLAGS
             PNETCDF_FFLAGS=$PNETCDF_CPPFLAGS
 
