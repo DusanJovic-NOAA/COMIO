@@ -207,4 +207,23 @@ contains
     test_comio_dbl_validate = all(ddata == 2.d0*prank+1.d0)
   end function test_comio_dbl_validate
 
+  logical function test_comio_dim_validate(name)
+    character(len=*), intent(in) :: name
+    integer :: ierr
+    integer, pointer :: dims(:)
+    ! -- default
+    test_comio_dim_validate = .false.
+    nullify(dims)
+    ! -- set data decomposition
+    call test_comio_decomp(ldx,ldy)
+    ! -- read from file
+    call io % open(filename, "r")
+    call io % domain(name, dims)
+    call io % close()
+    ! -- validate data
+    test_comio_dim_validate = all(dims == (/ NX, NY /))
+    ! -- free up memory
+    deallocate(dims)
+  end function test_comio_dim_validate
+
 end module test_comio_mod

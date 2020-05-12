@@ -43,6 +43,7 @@ module hdf_class
     procedure :: io_domain_set
     procedure :: io_pause
 
+    procedure :: io_dataset_get_dims
     procedure :: io_dataset_read_1d_int, &
                  io_dataset_read_2d_int, &
                  io_dataset_read_3d_int, &
@@ -475,6 +476,11 @@ contains
   subroutine io_dataset_close(io)
     class(HDF5_IO_T) :: io
 
+    if (io % filespace /= H5S_ALL_F) then
+      call h5sclose_f(io % filespace, io % err % rc)
+      if (io % err % check(line=__LINE__)) return
+      io % filespace = H5S_ALL_F
+    end if
     if (io % dset_id /= -1) then
       call h5dclose_f(io % dset_id, io % err % rc)
       if (io % err % check(msg="Unable to close dataset", line=__LINE__)) return
@@ -482,6 +488,58 @@ contains
     end if
 
   end subroutine io_dataset_close
+
+  subroutine io_dataset_get_dims(io, dsetname, dims)
+    class(HDF5_IO_T)              :: io
+    character(len=*),  intent(in) :: dsetname
+    integer,           pointer    :: dims(:)
+
+    integer :: ndims, rc
+    integer(HSIZE_T), dimension(:), allocatable :: dset_dims, dset_maxdims
+
+    ! -- check if pointer argument is associated
+    if (associated(dims)) then
+      call io % err % set(msg="Pointer argument must not be associated", line=__LINE__)
+      return
+    end if
+
+    ! -- check if dataset exists
+    if (io_dataset_inquire(io, dsetname)) then
+      ! -- open dataset if present
+      call h5dopen_f(io % file_id, dsetname, io % dset_id, io % err % rc)
+      if (io % err % check(line=__LINE__)) return
+      ! -- get dataspace
+      call h5dget_space_f(io % dset_id, io % filespace, io % err % rc)
+      if (io % err % check(line=__LINE__)) return
+      ! -- get dimensions
+      call h5sget_simple_extent_ndims_f(io % filespace, ndims, io % err % rc)
+      if (io % err % check(line=__LINE__)) return
+      ! -- allocate output and work arrays
+      allocate(dims(ndims), dset_dims(ndims), dset_maxdims(ndims), stat = io % err % rc)
+      if (io % err % check(line=__LINE__, msg="Unable to allocate memory")) return
+      ! -- retrieve global dimensions
+      dims = 0
+      dset_dims = 0
+      dset_maxdims = 0
+      call h5sget_simple_extent_dims_f(io % filespace, dset_dims, dset_maxdims, rc)
+      if (rc == io % err % failure) io % err % rc = rc
+      if (io % err % check(line=__LINE__)) return
+      if (rc /= ndims) then
+        call io % err % set(msg="Dataspace rank mismatch", line=__LINE__)
+        return
+      end if
+      ! -- convert to integer
+      dims = dset_dims
+      ! -- free up memory
+      deallocate(dset_dims, dset_maxdims, stat = io % err % rc)
+      if (io % err % check(line=__LINE__, msg="Unable to free up memory")) return
+      ! -- close dataset and release dataspace
+      call io_dataset_close(io)
+      if (io % err % check(line=__LINE__)) return
+
+    end if
+
+  end subroutine io_dataset_get_dims
 
   ! -- Basic I/O APIs
 

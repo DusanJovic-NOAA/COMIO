@@ -45,6 +45,7 @@ module pnc_class
     procedure :: io_domain_set
     procedure :: io_pause
 
+    procedure :: io_dataset_get_dims
     procedure :: io_dataset_read_1d_int, &
                  io_dataset_read_2d_int, &
                  io_dataset_read_3d_int, &
@@ -472,6 +473,56 @@ contains
     io % dset_id = -1
 
   end subroutine io_dataset_close
+
+  subroutine io_dataset_get_dims(io, dsetname, dims)
+    class(PNC_IO_T)              :: io
+    character(len=*), intent(in) :: dsetname
+    integer,          pointer    :: dims(:)
+
+    integer :: item, ndims
+    integer(kind=MPI_OFFSET_KIND) :: dimlen
+    integer, dimension(:), allocatable :: dimids
+
+    ! -- check if file is open
+    if (io % file_id == -1) return
+
+    ! -- check if pointer is associated
+    if (associated(dims)) then
+      call io % err % set(msg="Pointer argument must not be associated", line=__LINE__)
+      return
+    end if
+
+    ! -- get variable id
+    io % err % rc = nf90mpi_inq_varid(io % file_id, dsetname, io % dset_id)
+    if (io % err % check(msg=nf90mpi_strerror(io % err % rc), line=__LINE__)) return
+
+    ! -- inquire variable id and dimensions
+    io % err % rc = nf90mpi_inquire_variable(io % file_id, io % dset_id, ndims=ndims)
+    if (io % err % check(msg=nf90mpi_strerror(io % err % rc), line=__LINE__)) return
+
+    ! -- allocate arrays to store dataset global dimsnsions
+    allocate(dims(ndims), dimids(ndims), stat = io % err % rc)
+    if (io % err % check(line=__LINE__, msg="Unable to allocate memory")) return
+
+    ! -- get dimensions ids and length and update domain decomposition
+    io % err % rc = nf90mpi_inquire_variable(io % file_id, io % dset_id, dimids=dimids)
+    if (io % err % check(msg=nf90mpi_strerror(io % err % rc), line=__LINE__)) return
+
+    do item = 1, ndims
+      io % err % rc = nf90mpi_inquire_dimension(io % file_id, dimids(item), len=dimlen)
+      if (io % err % check(msg=nf90mpi_strerror(io % err % rc), line=__LINE__)) return
+      dims(item) = dimlen
+    end do
+
+    ! -- deallocate global dimension id array
+    deallocate(dimids, stat = io % err % rc)
+    if (io % err % check(line=__LINE__, msg="Unable to free memory")) return
+
+    ! -- release dataset id
+    call io_dataset_close(io)
+    if (io % err % check(line=__LINE__)) return
+
+  end subroutine io_dataset_get_dims
 
   ! -- Basic I/O APIs
 

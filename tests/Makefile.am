@@ -62,26 +62,32 @@ check_PROGRAMS += test_comio_hdf_int
 check_PROGRAMS += test_comio_hdf_flt
 check_PROGRAMS += test_comio_hdf_dbl
 check_PROGRAMS += test_comio_hdf_att
+check_PROGRAMS += test_comio_hdf_dim
 test_comio_hdf_int_SOURCES = test_comio_mod.F90 test_comio_hdf_int.F90
 test_comio_hdf_flt_SOURCES = test_comio_mod.F90 test_comio_hdf_flt.F90
 test_comio_hdf_dbl_SOURCES = test_comio_mod.F90 test_comio_hdf_dbl.F90
 test_comio_hdf_att_SOURCES = test_comio_mod.F90 test_comio_hdf_att.F90
+test_comio_hdf_dim_SOURCES = test_comio_mod.F90 test_comio_hdf_dim.F90
 test_comio_hdf_int.$(OBJEXT) : test_comio_mod.$(OBJEXT)
 test_comio_hdf_flt.$(OBJEXT) : test_comio_mod.$(OBJEXT)
 test_comio_hdf_dbl.$(OBJEXT) : test_comio_mod.$(OBJEXT)
 test_comio_hdf_att.$(OBJEXT) : test_comio_mod.$(OBJEXT)
+test_comio_hdf_dim.$(OBJEXT) : test_comio_mod.$(OBJEXT)
 endif
 if HAVE_PNETCDF
 check_PROGRAMS += test_comio_pnc_int
 check_PROGRAMS += test_comio_pnc_flt
 check_PROGRAMS += test_comio_pnc_dbl
 check_PROGRAMS += test_comio_pnc_att
+check_PROGRAMS += test_comio_pnc_dim
 test_comio_pnc_int_SOURCES = test_comio_mod.F90 test_comio_pnc_int.F90
 test_comio_pnc_flt_SOURCES = test_comio_mod.F90 test_comio_pnc_flt.F90
 test_comio_pnc_dbl_SOURCES = test_comio_mod.F90 test_comio_pnc_dbl.F90
 test_comio_pnc_att_SOURCES = test_comio_mod.F90 test_comio_pnc_att.F90
+test_comio_pnc_dim_SOURCES = test_comio_mod.F90 test_comio_pnc_dim.F90
 test_comio_pnc_int.$(OBJEXT) : test_comio_mod.$(OBJEXT)
 test_comio_pnc_flt.$(OBJEXT) : test_comio_mod.$(OBJEXT)
 test_comio_pnc_dbl.$(OBJEXT) : test_comio_mod.$(OBJEXT)
 test_comio_pnc_att.$(OBJEXT) : test_comio_mod.$(OBJEXT)
+test_comio_pnc_dim.$(OBJEXT) : test_comio_mod.$(OBJEXT)
 endif

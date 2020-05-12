@@ -19,7 +19,8 @@ module comio_class
     generic :: shutdown => io_finalize
     generic :: open     => io_file_open
     generic :: close    => io_file_close
-    generic :: domain   => io_domain_set
+    generic :: domain   => io_domain_set, &
+                           io_dataset_get_dims
     generic :: pause    => io_pause
     generic :: read     => io_dataset_read_1d_int, &
                            io_dataset_read_2d_int, &
@@ -63,6 +64,7 @@ module comio_class
     procedure(io_file_close_if),              deferred :: io_file_close
     procedure(io_domain_set_if),              deferred :: io_domain_set
     procedure(io_pause_if     ),              deferred :: io_pause
+    procedure(io_dataset_get_dims_if),        deferred :: io_dataset_get_dims
     procedure(io_dataset_read_1d_int_if),     deferred :: io_dataset_read_1d_int
     procedure(io_dataset_read_2d_int_if),     deferred :: io_dataset_read_2d_int
     procedure(io_dataset_read_3d_int_if),     deferred :: io_dataset_read_3d_int
@@ -140,6 +142,13 @@ module comio_class
       logical, intent(in) :: flag
     end subroutine
     ! -- Dataset I/O APIs
+    ! -- inquiring:
+    subroutine io_dataset_get_dims_if(io, dsetname, dims)
+      import
+      class(COMIO_T)                :: io
+      character(len=*), intent(in)  :: dsetname
+      integer,          pointer     :: dims(:)
+    end subroutine
     ! -- reading:
     ! -- integer
     ! -- * 1D
