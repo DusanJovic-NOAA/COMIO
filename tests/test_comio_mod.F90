@@ -141,6 +141,25 @@ contains
     call io % close()
   end subroutine test_comio_dbl_write
 
+  subroutine test_comio_att_write(name)
+    character(len=*), intent(in) :: name
+    ! -- create data
+    ddata = 2.d0 * prank + 1.d0
+    ! -- and data decomposition
+    call test_comio_decomp(ldx,ldy)
+    ! -- write to file
+    call io % open(filename, "c")
+    call io % domain((/ DX, DY /), mstart, mcount)
+    call io % write(name, ddata)
+    call io % describe(name, "units", "kg m-3")
+    call io % describe(name, "min", 1.d0)
+    call io % describe(name, "max", 9.d0)
+    call io % describe(name, "decomp", (/ ldx, ldy /))
+    call io % describe("unit_test", "COMIO attributes")
+    call io % describe("domain_array", (/ DX, DY /))
+    call io % close()
+  end subroutine test_comio_att_write
+
   logical function test_comio_int_validate(name)
     character(len=*), intent(in) :: name
     ! -- default

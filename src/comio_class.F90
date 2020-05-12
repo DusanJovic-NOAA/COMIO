@@ -39,33 +39,62 @@ module comio_class
                            io_dataset_write_1d_dp,  &
                            io_dataset_write_2d_dp,  &
                            io_dataset_write_3d_dp
+    generic :: describe => io_describe_string,         &
+                           io_describe_int,            &
+                           io_describe_sp,             &
+                           io_describe_dp,             &
+                           io_describe_1d_int,         &
+                           io_describe_1d_sp,          &
+                           io_describe_1d_dp,          &
+                           io_dataset_describe_string, &
+                           io_dataset_describe_int,    &
+                           io_dataset_describe_sp,     &
+                           io_dataset_describe_dp,     &
+                           io_dataset_describe_1d_int, &
+                           io_dataset_describe_1d_sp,  &
+                           io_dataset_describe_1d_dp
+
     procedure :: version
 
     ! -- Deferred implementation
-    procedure(io_initialize_if),           deferred :: io_initialize
-    procedure(io_finalize_if  ),           deferred :: io_finalize
-    procedure(io_file_open_if ),           deferred :: io_file_open
-    procedure(io_file_close_if),           deferred :: io_file_close
-    procedure(io_domain_set_if),           deferred :: io_domain_set
-    procedure(io_pause_if     ),           deferred :: io_pause
-    procedure(io_dataset_read_1d_int_if),  deferred :: io_dataset_read_1d_int
-    procedure(io_dataset_read_2d_int_if),  deferred :: io_dataset_read_2d_int
-    procedure(io_dataset_read_3d_int_if),  deferred :: io_dataset_read_3d_int
-    procedure(io_dataset_read_1d_sp_if ),  deferred :: io_dataset_read_1d_sp
-    procedure(io_dataset_read_2d_sp_if ),  deferred :: io_dataset_read_2d_sp
-    procedure(io_dataset_read_3d_sp_if ),  deferred :: io_dataset_read_3d_sp
-    procedure(io_dataset_read_1d_dp_if ),  deferred :: io_dataset_read_1d_dp
-    procedure(io_dataset_read_2d_dp_if ),  deferred :: io_dataset_read_2d_dp
-    procedure(io_dataset_read_3d_dp_if ),  deferred :: io_dataset_read_3d_dp
-    procedure(io_dataset_write_1d_int_if), deferred :: io_dataset_write_1d_int
-    procedure(io_dataset_write_2d_int_if), deferred :: io_dataset_write_2d_int
-    procedure(io_dataset_write_3d_int_if), deferred :: io_dataset_write_3d_int
-    procedure(io_dataset_write_1d_sp_if ), deferred :: io_dataset_write_1d_sp
-    procedure(io_dataset_write_2d_sp_if ), deferred :: io_dataset_write_2d_sp
-    procedure(io_dataset_write_3d_sp_if ), deferred :: io_dataset_write_3d_sp
-    procedure(io_dataset_write_1d_dp_if ), deferred :: io_dataset_write_1d_dp
-    procedure(io_dataset_write_2d_dp_if ), deferred :: io_dataset_write_2d_dp
-    procedure(io_dataset_write_3d_dp_if ), deferred :: io_dataset_write_3d_dp
+    procedure(io_initialize_if),              deferred :: io_initialize
+    procedure(io_finalize_if  ),              deferred :: io_finalize
+    procedure(io_file_open_if ),              deferred :: io_file_open
+    procedure(io_file_close_if),              deferred :: io_file_close
+    procedure(io_domain_set_if),              deferred :: io_domain_set
+    procedure(io_pause_if     ),              deferred :: io_pause
+    procedure(io_dataset_read_1d_int_if),     deferred :: io_dataset_read_1d_int
+    procedure(io_dataset_read_2d_int_if),     deferred :: io_dataset_read_2d_int
+    procedure(io_dataset_read_3d_int_if),     deferred :: io_dataset_read_3d_int
+    procedure(io_dataset_read_1d_sp_if ),     deferred :: io_dataset_read_1d_sp
+    procedure(io_dataset_read_2d_sp_if ),     deferred :: io_dataset_read_2d_sp
+    procedure(io_dataset_read_3d_sp_if ),     deferred :: io_dataset_read_3d_sp
+    procedure(io_dataset_read_1d_dp_if ),     deferred :: io_dataset_read_1d_dp
+    procedure(io_dataset_read_2d_dp_if ),     deferred :: io_dataset_read_2d_dp
+    procedure(io_dataset_read_3d_dp_if ),     deferred :: io_dataset_read_3d_dp
+    procedure(io_dataset_write_1d_int_if),    deferred :: io_dataset_write_1d_int
+    procedure(io_dataset_write_2d_int_if),    deferred :: io_dataset_write_2d_int
+    procedure(io_dataset_write_3d_int_if),    deferred :: io_dataset_write_3d_int
+    procedure(io_dataset_write_1d_sp_if ),    deferred :: io_dataset_write_1d_sp
+    procedure(io_dataset_write_2d_sp_if ),    deferred :: io_dataset_write_2d_sp
+    procedure(io_dataset_write_3d_sp_if ),    deferred :: io_dataset_write_3d_sp
+    procedure(io_dataset_write_1d_dp_if ),    deferred :: io_dataset_write_1d_dp
+    procedure(io_dataset_write_2d_dp_if ),    deferred :: io_dataset_write_2d_dp
+    procedure(io_dataset_write_3d_dp_if ),    deferred :: io_dataset_write_3d_dp
+    procedure(io_describe_string_if),         deferred :: io_describe_string
+    procedure(io_describe_int_if   ),         deferred :: io_describe_int
+    procedure(io_describe_sp_if    ),         deferred :: io_describe_sp
+    procedure(io_describe_dp_if    ),         deferred :: io_describe_dp
+    procedure(io_describe_1d_int_if),         deferred :: io_describe_1d_int
+    procedure(io_describe_1d_sp_if ),         deferred :: io_describe_1d_sp
+    procedure(io_describe_1d_dp_if ),         deferred :: io_describe_1d_dp
+    procedure(io_dataset_describe_string_if), deferred :: io_dataset_describe_string
+    procedure(io_dataset_describe_int_if   ), deferred :: io_dataset_describe_int
+    procedure(io_dataset_describe_sp_if    ), deferred :: io_dataset_describe_sp
+    procedure(io_dataset_describe_dp_if    ), deferred :: io_dataset_describe_dp
+    procedure(io_dataset_describe_1d_int_if), deferred :: io_dataset_describe_1d_int
+    procedure(io_dataset_describe_1d_sp_if ), deferred :: io_dataset_describe_1d_sp
+    procedure(io_dataset_describe_1d_dp_if ), deferred :: io_dataset_describe_1d_dp
 
   end type
 
@@ -237,6 +266,101 @@ module comio_class
       character(len=*), intent(in)    :: dsetname
       real(dp),         intent(inout) :: buffer(:,:,:)
     end subroutine
+    ! -- describing:
+    ! -- global
+    subroutine io_describe_string_if(io, key, value)
+      import
+      class(COMIO_T)               :: io
+      character(len=*), intent(in) :: key
+      character(len=*), intent(in) :: value
+    end subroutine
+    subroutine io_describe_int_if(io, key, value)
+      import
+      class(COMIO_T)               :: io
+      character(len=*), intent(in) :: key
+      integer,          intent(in) :: value
+    end subroutine
+    subroutine io_describe_sp_if(io, key, value)
+      import
+      class(COMIO_T)               :: io
+      character(len=*), intent(in) :: key
+      real(sp),         intent(in) :: value
+    end subroutine
+    subroutine io_describe_dp_if(io, key, value)
+      import
+      class(COMIO_T)               :: io
+      character(len=*), intent(in) :: key
+      real(dp),         intent(in) :: value
+    end subroutine
+    subroutine io_describe_1d_int_if(io, key, values)
+      import
+      class(COMIO_T)               :: io
+      character(len=*), intent(in) :: key
+      integer,          intent(in) :: values(:)
+    end subroutine
+    subroutine io_describe_1d_sp_if(io, key, values)
+      import
+      class(COMIO_T)               :: io
+      character(len=*), intent(in) :: key
+      real(sp),         intent(in) :: values(:)
+    end subroutine
+    subroutine io_describe_1d_dp_if(io, key, values)
+      import
+      class(COMIO_T)               :: io
+      character(len=*), intent(in) :: key
+      real(dp),         intent(in) :: values(:)
+    end subroutine
+    ! -- dataset
+    subroutine io_dataset_describe_string_if(io, dsetname, key, value)
+      import
+      class(COMIO_T)               :: io
+      character(len=*), intent(in) :: dsetname
+      character(len=*), intent(in) :: key
+      character(len=*), intent(in) :: value
+    end subroutine
+    subroutine io_dataset_describe_int_if(io, dsetname, key, value)
+      import
+      class(COMIO_T)               :: io
+      character(len=*), intent(in) :: dsetname
+      character(len=*), intent(in) :: key
+      integer,          intent(in) :: value
+    end subroutine
+    subroutine io_dataset_describe_sp_if(io, dsetname, key, value)
+      import
+      class(COMIO_T)               :: io
+      character(len=*), intent(in) :: dsetname
+      character(len=*), intent(in) :: key
+      real(sp),         intent(in) :: value
+    end subroutine
+    subroutine io_dataset_describe_dp_if(io, dsetname, key, value)
+      import
+      class(COMIO_T)               :: io
+      character(len=*), intent(in) :: dsetname
+      character(len=*), intent(in) :: key
+      real(dp),         intent(in) :: value
+    end subroutine
+    subroutine io_dataset_describe_1d_int_if(io, dsetname, key, values)
+      import
+      class(COMIO_T)               :: io
+      character(len=*), intent(in) :: dsetname
+      character(len=*), intent(in) :: key
+      integer,          intent(in) :: values(:)
+    end subroutine
+    subroutine io_dataset_describe_1d_sp_if(io, dsetname, key, values)
+      import
+      class(COMIO_T)               :: io
+      character(len=*), intent(in) :: dsetname
+      character(len=*), intent(in) :: key
+      real(sp),         intent(in) :: values(:)
+    end subroutine
+    subroutine io_dataset_describe_1d_dp_if(io, dsetname, key, values)
+      import
+      class(COMIO_T)               :: io
+      character(len=*), intent(in) :: dsetname
+      character(len=*), intent(in) :: key
+      real(dp),         intent(in) :: values(:)
+    end subroutine
+
   end interface
 
 contains

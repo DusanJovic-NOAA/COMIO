@@ -61,6 +61,20 @@ module hdf_class
                  io_dataset_write_1d_dp,  &
                  io_dataset_write_2d_dp,  &
                  io_dataset_write_3d_dp
+    procedure :: io_describe_string,         &
+                 io_describe_int,            &
+                 io_describe_sp,             &
+                 io_describe_dp,             &
+                 io_describe_1d_int,         &
+                 io_describe_1d_sp,          &
+                 io_describe_1d_dp,          &
+                 io_dataset_describe_string, &
+                 io_dataset_describe_int,    &
+                 io_dataset_describe_sp,     &
+                 io_dataset_describe_dp,     &
+                 io_dataset_describe_1d_int, &
+                 io_dataset_describe_1d_sp,  &
+                 io_dataset_describe_1d_dp
 
     procedure :: fs_itype_get => io_filespace_int_datatype_get
     procedure :: fs_ftype_get => io_filespace_fp_datatype_get
@@ -1116,6 +1130,548 @@ contains
     if (io % err % check(line=__LINE__)) return
 
   end subroutine io_dataset_write_3d_dp
+
+  ! -- describing:
+  ! -- global
+  subroutine io_describe_string(io, key, value)
+    class(HDF5_IO_T)             :: io
+    character(len=*), intent(in) :: key
+    character(len=*), intent(in) :: value
+
+    integer(HID_T)   :: aspace_id, attr_id, atype_id
+    integer(HSIZE_T) :: dims(1), alen
+
+    ! -- check if file is open
+    if (io % file_id /= -1) then
+      ! -- create attribute dataspace
+      dims = 0
+      call h5screate_simple_f(0, dims, aspace_id, io % err % rc)
+      if (io % err % check(line=__LINE__)) return
+      ! -- create attribute datatype
+      alen = len_trim(value)
+      call h5tcopy_f(H5T_NATIVE_CHARACTER, atype_id, io % err % rc)
+      if (io % err % check(line=__LINE__)) return
+      call h5tset_size_f(atype_id, alen, io % err % rc)
+      if (io % err % check(line=__LINE__)) return
+      ! -- create attribute
+      call h5acreate_f(io % file_id, key, atype_id, aspace_id, &
+        attr_id, io % err % rc)
+      if (io % err % check(line=__LINE__)) return
+      ! -- write attribute to file
+      call h5awrite_f(attr_id, atype_id, trim(value), dims, io % err % rc)
+      if (io % err % check(line=__LINE__)) return
+      ! -- release attribute id
+      call h5aclose_f(attr_id, io % err % rc)
+      if (io % err % check(line=__LINE__)) return
+      ! -- release type id
+      call h5tclose_f(atype_id, io % err % rc)
+      if (io % err % check(line=__LINE__)) return
+      ! -- release dataspace id
+      call h5sclose_f(aspace_id, io % err % rc)
+      if (io % err % check(line=__LINE__)) return
+    end if
+
+  end subroutine io_describe_string
+
+  subroutine io_describe_int(io, key, value)
+    class(HDF5_IO_T)             :: io
+    character(len=*), intent(in) :: key
+    integer,          intent(in) :: value
+
+    integer(HID_T)   :: aspace_id, attr_id, type_id
+    integer(HSIZE_T) :: dims(1)
+
+    ! -- check if file is open
+    if (io % file_id /= -1) then
+      ! -- get attribute type id
+      type_id = io % fs_itype_get(kind(1))
+      if (io % err % check(line=__LINE__)) return
+      ! -- create attribute dataspace
+      dims = 0
+      call h5screate_simple_f(0, dims, aspace_id, io % err % rc)
+      if (io % err % check(line=__LINE__)) return
+      ! -- open dataset if present
+      call h5acreate_f(io % file_id, key, type_id, aspace_id, &
+        attr_id, io % err % rc)
+      if (io % err % check(line=__LINE__)) return
+      ! -- write attribute to file
+      call h5awrite_f(attr_id, type_id, value, dims, io % err % rc)
+      if (io % err % check(line=__LINE__)) return
+      ! -- release attribute id
+      call h5aclose_f(attr_id, io % err % rc)
+      if (io % err % check(line=__LINE__)) return
+      ! -- release dataspace id
+      call h5sclose_f(aspace_id, io % err % rc)
+      if (io % err % check(line=__LINE__)) return
+    end if
+
+  end subroutine io_describe_int
+
+  subroutine io_describe_1d_int(io, key, values)
+    class(HDF5_IO_T)             :: io
+    character(len=*), intent(in) :: key
+    integer,          intent(in) :: values(:)
+
+    integer(HID_T)   :: aspace_id, attr_id, type_id
+    integer(HSIZE_T) :: dims(1)
+
+    ! -- check if file is open
+    if (io % file_id /= -1) then
+      ! -- get attribute type id
+      type_id = io % fs_itype_get(kind(1))
+      if (io % err % check(line=__LINE__)) return
+      ! -- create attribute dataspace
+      dims = size(values)
+      call h5screate_simple_f(1, dims, aspace_id, io % err % rc)
+      if (io % err % check(line=__LINE__)) return
+      ! -- open dataset if present
+      call h5acreate_f(io % file_id, key, type_id, aspace_id, &
+        attr_id, io % err % rc)
+      if (io % err % check(line=__LINE__)) return
+      ! -- write attribute to file
+      call h5awrite_f(attr_id, type_id, values, dims, io % err % rc)
+      if (io % err % check(line=__LINE__)) return
+      ! -- release attribute id
+      call h5aclose_f(attr_id, io % err % rc)
+      if (io % err % check(line=__LINE__)) return
+      ! -- release dataspace id
+      call h5sclose_f(aspace_id, io % err % rc)
+      if (io % err % check(line=__LINE__)) return
+    end if
+
+  end subroutine io_describe_1d_int
+
+  subroutine io_describe_sp(io, key, value)
+    class(HDF5_IO_T)             :: io
+    character(len=*), intent(in) :: key
+    real(sp),         intent(in) :: value
+
+    integer(HID_T)   :: aspace_id, attr_id, type_id
+    integer(HSIZE_T) :: dims(1)
+
+    ! -- check if file is open
+    if (io % file_id /= -1) then
+      ! -- get attribute type id
+      type_id = io % fs_ftype_get(sp)
+      if (io % err % check(line=__LINE__)) return
+      ! -- create attribute dataspace
+      dims = 0
+      call h5screate_simple_f(0, dims, aspace_id, io % err % rc)
+      if (io % err % check(line=__LINE__)) return
+      ! -- open dataset if present
+      call h5acreate_f(io % file_id, key, type_id, aspace_id, &
+        attr_id, io % err % rc)
+      if (io % err % check(line=__LINE__)) return
+      ! -- write attribute to file
+      call h5awrite_f(attr_id, type_id, value, dims, io % err % rc)
+      if (io % err % check(line=__LINE__)) return
+      ! -- release attribute id
+      call h5aclose_f(attr_id, io % err % rc)
+      if (io % err % check(line=__LINE__)) return
+      ! -- release dataspace id
+      call h5sclose_f(aspace_id, io % err % rc)
+      if (io % err % check(line=__LINE__)) return
+    end if
+
+  end subroutine io_describe_sp
+
+  subroutine io_describe_1d_sp(io, key, values)
+    class(HDF5_IO_T)             :: io
+    character(len=*), intent(in) :: key
+    real(sp),         intent(in) :: values(:)
+
+    integer(HID_T)   :: aspace_id, attr_id, type_id
+    integer(HSIZE_T) :: dims(1)
+
+    ! -- check if file is open
+    if (io % file_id /= -1) then
+      ! -- get attribute type id
+      type_id = io % fs_ftype_get(sp)
+      if (io % err % check(line=__LINE__)) return
+      ! -- create attribute dataspace
+      dims = size(values)
+      call h5screate_simple_f(1, dims, aspace_id, io % err % rc)
+      if (io % err % check(line=__LINE__)) return
+      ! -- open dataset if present
+      call h5acreate_f(io % file_id, key, type_id, aspace_id, &
+        attr_id, io % err % rc)
+      if (io % err % check(line=__LINE__)) return
+      ! -- write attribute to file
+      call h5awrite_f(attr_id, type_id, values, dims, io % err % rc)
+      if (io % err % check(line=__LINE__)) return
+      ! -- release attribute id
+      call h5aclose_f(attr_id, io % err % rc)
+      if (io % err % check(line=__LINE__)) return
+      ! -- release dataspace id
+      call h5sclose_f(aspace_id, io % err % rc)
+      if (io % err % check(line=__LINE__)) return
+    end if
+
+  end subroutine io_describe_1d_sp
+
+  subroutine io_describe_dp(io, key, value)
+    class(HDF5_IO_T)             :: io
+    character(len=*), intent(in) :: key
+    real(dp),         intent(in) :: value
+
+    integer(HID_T)   :: aspace_id, attr_id, type_id
+    integer(HSIZE_T) :: dims(1)
+
+    ! -- check if file is open
+    if (io % file_id /= -1) then
+      ! -- get attribute type id
+      type_id = io % fs_ftype_get(dp)
+      if (io % err % check(line=__LINE__)) return
+      ! -- create attribute dataspace
+      dims = 0
+      call h5screate_simple_f(0, dims, aspace_id, io % err % rc)
+      if (io % err % check(line=__LINE__)) return
+      ! -- open dataset if present
+      call h5acreate_f(io % file_id, key, type_id, aspace_id, &
+        attr_id, io % err % rc)
+      if (io % err % check(line=__LINE__)) return
+      ! -- write attribute to file
+      call h5awrite_f(attr_id, type_id, value, dims, io % err % rc)
+      if (io % err % check(line=__LINE__)) return
+      ! -- release attribute id
+      call h5aclose_f(attr_id, io % err % rc)
+      if (io % err % check(line=__LINE__)) return
+      ! -- release dataspace id
+      call h5sclose_f(aspace_id, io % err % rc)
+      if (io % err % check(line=__LINE__)) return
+    end if
+
+  end subroutine io_describe_dp
+
+  subroutine io_describe_1d_dp(io, key, values)
+    class(HDF5_IO_T)             :: io
+    character(len=*), intent(in) :: key
+    real(dp),         intent(in) :: values(:)
+
+    integer(HID_T)   :: aspace_id, attr_id, type_id
+    integer(HSIZE_T) :: dims(1)
+
+    ! -- check if file is open
+    if (io % file_id /= -1) then
+      ! -- get attribute type id
+      type_id = io % fs_ftype_get(dp)
+      if (io % err % check(line=__LINE__)) return
+      ! -- create attribute dataspace
+      dims = size(values)
+      call h5screate_simple_f(1, dims, aspace_id, io % err % rc)
+      if (io % err % check(line=__LINE__)) return
+      ! -- open dataset if present
+      call h5acreate_f(io % file_id, key, type_id, aspace_id, &
+        attr_id, io % err % rc)
+      if (io % err % check(line=__LINE__)) return
+      ! -- write attribute to file
+      dims = size(values)
+      call h5awrite_f(attr_id, type_id, values, dims, io % err % rc)
+      if (io % err % check(line=__LINE__)) return
+      ! -- release attribute id
+      call h5aclose_f(attr_id, io % err % rc)
+      if (io % err % check(line=__LINE__)) return
+      ! -- release dataspace id
+      call h5sclose_f(aspace_id, io % err % rc)
+      if (io % err % check(line=__LINE__)) return
+    end if
+
+  end subroutine io_describe_1d_dp
+
+  ! -- dataset
+
+  subroutine io_dataset_describe_string(io, dsetname, key, value)
+    class(HDF5_IO_T)             :: io
+    character(len=*), intent(in) :: dsetname
+    character(len=*), intent(in) :: key
+    character(len=*), intent(in) :: value
+
+    integer(HID_T)   :: aspace_id, attr_id, atype_id
+    integer(HSIZE_T) :: dims(1), alen
+
+    ! -- check if dataset exists
+    if (io_dataset_inquire(io, dsetname)) then
+      ! -- open dataset if present
+      call h5dopen_f(io % file_id, dsetname, io % dset_id, io % err % rc)
+      if (io % err % check(line=__LINE__)) return
+      ! -- create attribute dataspace
+      dims = 0
+      call h5screate_simple_f(0, dims, aspace_id, io % err % rc)
+      if (io % err % check(line=__LINE__)) return
+      ! -- create attribute datatype
+      alen = len_trim(value)
+      call h5tcopy_f(H5T_NATIVE_CHARACTER, atype_id, io % err % rc)
+      if (io % err % check(line=__LINE__)) return
+      call h5tset_size_f(atype_id, alen, io % err % rc)
+      if (io % err % check(line=__LINE__)) return
+      ! -- create attribute
+      call h5acreate_f(io % dset_id, key, atype_id, aspace_id, &
+        attr_id, io % err % rc)
+      if (io % err % check(line=__LINE__)) return
+      ! -- write attribute to file
+      call h5awrite_f(attr_id, atype_id, trim(value), dims, io % err % rc)
+      if (io % err % check(line=__LINE__)) return
+      ! -- release attribute id
+      call h5aclose_f(attr_id, io % err % rc)
+      if (io % err % check(line=__LINE__)) return
+      ! -- release type id
+      call h5tclose_f(atype_id, io % err % rc)
+      if (io % err % check(line=__LINE__)) return
+      ! -- release dataspace id
+      call h5sclose_f(aspace_id, io % err % rc)
+      if (io % err % check(line=__LINE__)) return
+      ! -- close dataset
+      call io_dataset_close(io)
+      if (io % err % check(line=__LINE__)) return
+    end if
+
+  end subroutine io_dataset_describe_string
+
+  subroutine io_dataset_describe_int(io, dsetname, key, value)
+    class(HDF5_IO_T)             :: io
+    character(len=*), intent(in) :: dsetname
+    character(len=*), intent(in) :: key
+    integer,          intent(in) :: value
+
+    integer(HID_T)   :: aspace_id, attr_id, type_id
+    integer(HSIZE_T) :: dims(1)
+
+    ! -- check if dataset exists
+    if (io_dataset_inquire(io, dsetname)) then
+      ! -- open dataset if present
+      call h5dopen_f(io % file_id, dsetname, io % dset_id, io % err % rc)
+      if (io % err % check(line=__LINE__)) return
+      ! -- get attribute type id
+      type_id = io % fs_itype_get(kind(1))
+      if (io % err % check(line=__LINE__)) return
+      ! -- create attribute dataspace
+      dims = 0
+      call h5screate_simple_f(0, dims, aspace_id, io % err % rc)
+      if (io % err % check(line=__LINE__)) return
+      ! -- open dataset if present
+      call h5acreate_f(io % dset_id, key, type_id, aspace_id, &
+        attr_id, io % err % rc)
+      if (io % err % check(line=__LINE__)) return
+      ! -- write attribute to file
+      call h5awrite_f(attr_id, type_id, value, dims, io % err % rc)
+      if (io % err % check(line=__LINE__)) return
+      ! -- release attribute id
+      call h5aclose_f(attr_id, io % err % rc)
+      if (io % err % check(line=__LINE__)) return
+      ! -- release dataspace id
+      call h5sclose_f(aspace_id, io % err % rc)
+      if (io % err % check(line=__LINE__)) return
+      ! -- close dataset
+      call io_dataset_close(io)
+      if (io % err % check(line=__LINE__)) return
+    end if
+
+  end subroutine io_dataset_describe_int
+
+  subroutine io_dataset_describe_sp(io, dsetname, key, value)
+    class(HDF5_IO_T)             :: io
+    character(len=*), intent(in) :: dsetname
+    character(len=*), intent(in) :: key
+    real(sp),         intent(in) :: value
+
+    integer(HID_T)   :: aspace_id, attr_id, type_id
+    integer(HSIZE_T) :: dims(1)
+
+    ! -- check if dataset exists
+    if (io_dataset_inquire(io, dsetname)) then
+      ! -- open dataset if present
+      call h5dopen_f(io % file_id, dsetname, io % dset_id, io % err % rc)
+      if (io % err % check(line=__LINE__)) return
+      ! -- get attribute type id
+      type_id = io % fs_ftype_get(sp)
+      if (io % err % check(line=__LINE__)) return
+      ! -- create attribute dataspace
+      dims = 0
+      call h5screate_simple_f(0, dims, aspace_id, io % err % rc)
+      if (io % err % check(line=__LINE__)) return
+      ! -- open dataset if present
+      call h5acreate_f(io % dset_id, key, type_id, aspace_id, &
+        attr_id, io % err % rc)
+      if (io % err % check(line=__LINE__)) return
+      ! -- write attribute to file
+      call h5awrite_f(attr_id, type_id, value, dims, io % err % rc)
+      if (io % err % check(line=__LINE__)) return
+      ! -- release attribute id
+      call h5aclose_f(attr_id, io % err % rc)
+      if (io % err % check(line=__LINE__)) return
+      ! -- release dataspace id
+      call h5sclose_f(aspace_id, io % err % rc)
+      if (io % err % check(line=__LINE__)) return
+      ! -- close dataset
+      call io_dataset_close(io)
+      if (io % err % check(line=__LINE__)) return
+    end if
+
+  end subroutine io_dataset_describe_sp
+
+  subroutine io_dataset_describe_dp(io, dsetname, key, value)
+    class(HDF5_IO_T)             :: io
+    character(len=*), intent(in) :: dsetname
+    character(len=*), intent(in) :: key
+    real(dp),         intent(in) :: value
+
+    integer(HID_T)   :: aspace_id, attr_id, type_id
+    integer(HSIZE_T) :: dims(1)
+
+    ! -- check if dataset exists
+    if (io_dataset_inquire(io, dsetname)) then
+      ! -- open dataset if present
+      call h5dopen_f(io % file_id, dsetname, io % dset_id, io % err % rc)
+      if (io % err % check(line=__LINE__)) return
+      ! -- get attribute type id
+      type_id = io % fs_ftype_get(dp)
+      if (io % err % check(line=__LINE__)) return
+      ! -- create attribute dataspace
+      dims = 0
+      call h5screate_simple_f(0, dims, aspace_id, io % err % rc)
+      if (io % err % check(line=__LINE__)) return
+      ! -- open dataset if present
+      call h5acreate_f(io % dset_id, key, type_id, aspace_id, &
+        attr_id, io % err % rc)
+      if (io % err % check(line=__LINE__)) return
+      ! -- write attribute to file
+      call h5awrite_f(attr_id, type_id, value, dims, io % err % rc)
+      if (io % err % check(line=__LINE__)) return
+      ! -- release attribute id
+      call h5aclose_f(attr_id, io % err % rc)
+      if (io % err % check(line=__LINE__)) return
+      ! -- release dataspace id
+      call h5sclose_f(aspace_id, io % err % rc)
+      if (io % err % check(line=__LINE__)) return
+      ! -- close dataset
+      call io_dataset_close(io)
+      if (io % err % check(line=__LINE__)) return
+    end if
+
+  end subroutine io_dataset_describe_dp
+
+  subroutine io_dataset_describe_1d_int(io, dsetname, key, values)
+    class(HDF5_IO_T)             :: io
+    character(len=*), intent(in) :: dsetname
+    character(len=*), intent(in) :: key
+    integer,          intent(in) :: values(:)
+
+    integer(HID_T)   :: aspace_id, attr_id, type_id
+    integer(HSIZE_T) :: dims(1)
+
+    ! -- check if dataset exists
+    if (io_dataset_inquire(io, dsetname)) then
+      ! -- open dataset if present
+      call h5dopen_f(io % file_id, dsetname, io % dset_id, io % err % rc)
+      if (io % err % check(line=__LINE__)) return
+      ! -- get attribute type id
+      type_id = io % fs_itype_get(kind(1))
+      if (io % err % check(line=__LINE__)) return
+      ! -- create attribute dataspace
+      dims = size(values)
+      call h5screate_simple_f(1, dims, aspace_id, io % err % rc)
+      if (io % err % check(line=__LINE__)) return
+      ! -- open dataset if present
+      call h5acreate_f(io % dset_id, key, type_id, aspace_id, &
+        attr_id, io % err % rc)
+      if (io % err % check(line=__LINE__)) return
+      ! -- write attribute to file
+      call h5awrite_f(attr_id, type_id, values, dims, io % err % rc)
+      if (io % err % check(line=__LINE__)) return
+      ! -- release attribute id
+      call h5aclose_f(attr_id, io % err % rc)
+      if (io % err % check(line=__LINE__)) return
+      ! -- release dataspace id
+      call h5sclose_f(aspace_id, io % err % rc)
+      if (io % err % check(line=__LINE__)) return
+      ! -- close dataset
+      call io_dataset_close(io)
+      if (io % err % check(line=__LINE__)) return
+    end if
+
+  end subroutine io_dataset_describe_1d_int
+
+  subroutine io_dataset_describe_1d_sp(io, dsetname, key, values)
+    class(HDF5_IO_T)             :: io
+    character(len=*), intent(in) :: dsetname
+    character(len=*), intent(in) :: key
+    real(sp),         intent(in) :: values(:)
+
+    integer(HID_T)   :: aspace_id, attr_id, type_id
+    integer(HSIZE_T) :: dims(1)
+
+    ! -- check if dataset exists
+    if (io_dataset_inquire(io, dsetname)) then
+      ! -- open dataset if present
+      call h5dopen_f(io % file_id, dsetname, io % dset_id, io % err % rc)
+      if (io % err % check(line=__LINE__)) return
+      ! -- get attribute type id
+      type_id = io % fs_ftype_get(sp)
+      if (io % err % check(line=__LINE__)) return
+      ! -- create attribute dataspace
+      dims = size(values)
+      call h5screate_simple_f(1, dims, aspace_id, io % err % rc)
+      if (io % err % check(line=__LINE__)) return
+      ! -- open dataset if present
+      call h5acreate_f(io % dset_id, key, type_id, aspace_id, &
+        attr_id, io % err % rc)
+      if (io % err % check(line=__LINE__)) return
+      ! -- write attribute to file
+      call h5awrite_f(attr_id, type_id, values, dims, io % err % rc)
+      if (io % err % check(line=__LINE__)) return
+      ! -- release attribute id
+      call h5aclose_f(attr_id, io % err % rc)
+      if (io % err % check(line=__LINE__)) return
+      ! -- release dataspace id
+      call h5sclose_f(aspace_id, io % err % rc)
+      if (io % err % check(line=__LINE__)) return
+      ! -- close dataset
+      call io_dataset_close(io)
+      if (io % err % check(line=__LINE__)) return
+    end if
+
+  end subroutine io_dataset_describe_1d_sp
+
+  subroutine io_dataset_describe_1d_dp(io, dsetname, key, values)
+    class(HDF5_IO_T)             :: io
+    character(len=*), intent(in) :: dsetname
+    character(len=*), intent(in) :: key
+    real(dp),         intent(in) :: values(:)
+
+    integer(HID_T)   :: aspace_id, attr_id, type_id
+    integer(HSIZE_T) :: dims(1)
+
+    ! -- check if dataset exists
+    if (io_dataset_inquire(io, dsetname)) then
+      ! -- open dataset if present
+      call h5dopen_f(io % file_id, dsetname, io % dset_id, io % err % rc)
+      if (io % err % check(line=__LINE__)) return
+      ! -- get attribute type id
+      type_id = io % fs_ftype_get(dp)
+      if (io % err % check(line=__LINE__)) return
+      ! -- create attribute dataspace
+      dims = size(values)
+      call h5screate_simple_f(0, dims, aspace_id, io % err % rc)
+      if (io % err % check(line=__LINE__)) return
+      ! -- open dataset if present
+      call h5acreate_f(io % dset_id, key, type_id, aspace_id, &
+        attr_id, io % err % rc)
+      if (io % err % check(line=__LINE__)) return
+      ! -- write attribute to file
+      call h5awrite_f(attr_id, type_id, values, dims, io % err % rc)
+      if (io % err % check(line=__LINE__)) return
+      ! -- release attribute id
+      call h5aclose_f(attr_id, io % err % rc)
+      if (io % err % check(line=__LINE__)) return
+      ! -- release dataspace id
+      call h5sclose_f(aspace_id, io % err % rc)
+      if (io % err % check(line=__LINE__)) return
+      ! -- close dataset
+      call io_dataset_close(io)
+      if (io % err % check(line=__LINE__)) return
+    end if
+
+  end subroutine io_dataset_describe_1d_dp
 
   ! -- Utilities
 
