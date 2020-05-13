@@ -141,6 +141,20 @@ contains
     call io % close()
   end subroutine test_comio_dbl_write
 
+  subroutine test_comio_d2f_write(name)
+    character(len=*), intent(in) :: name
+    ! -- create data
+    ddata = 2.d0 * prank + 1.d0
+    ! -- and data decomposition
+    call test_comio_decomp(ldx,ldy)
+    ! -- write to file
+    call io % open(filename, "c")
+    call io % domain((/ DX, DY /), mstart, mcount)
+    call io % writeas(1.)
+    call io % write(name, ddata)
+    call io % close()
+  end subroutine test_comio_d2f_write
+
   subroutine test_comio_att_write(name)
     character(len=*), intent(in) :: name
     ! -- create data

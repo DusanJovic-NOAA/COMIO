@@ -20,6 +20,7 @@ module pnc_class
 
     integer :: dtype_id   = -1
 
+    integer :: fspace_dtype        = -1
     integer :: fspace_dtype_int    = NF90_INT
     integer :: fspace_dtype_float  = NF90_FLOAT
     integer :: fspace_dtype_double = NF90_DOUBLE
@@ -44,6 +45,8 @@ module pnc_class
     procedure :: io_file_close
     procedure :: io_domain_set
     procedure :: io_pause
+
+    procedure :: io_datatype
 
     procedure :: io_dataset_get_dims
     procedure :: io_dataset_read_1d_int, &
@@ -534,7 +537,30 @@ contains
     io % paused = flag
   end subroutine io_pause
 
-  ! -- : integers
+  ! -- set write data type for automatic conversion
+  subroutine io_datatype(io, dtype)
+    class(PNC_IO_T)                :: io
+    class(*), optional, intent(in) :: dtype
+
+    io % fspace_dtype = -1
+
+    if (present(dtype)) then
+      select type (dtype)
+        type is (integer)
+          io % fspace_dtype = io % fs_itype_get(kind(1))
+        type is (real(sp))
+          io % fspace_dtype = io % fs_ftype_get(sp)
+        type is (real(dp))
+          io % fspace_dtype = io % fs_ftype_get(dp)
+        class default
+          call io % err % set(msg="Datatype unknown", line=__LINE__)
+          return
+      end select
+    end if
+
+  end subroutine io_datatype
+
+  ! -- read: integers
   ! --  * 1D arrays
   subroutine io_read_1d_int(io, buffer)
     class(PNC_IO_T)      :: io
@@ -571,7 +597,7 @@ contains
 
   end subroutine io_read_3d_int
 
-  ! -- : floating point
+  ! -- read: floating point
   ! --  * 1D arrays
   subroutine io_read_1d_sp(io, buffer)
     class(PNC_IO_T)       :: io
@@ -608,7 +634,7 @@ contains
 
   end subroutine io_read_3d_sp
 
-  ! -- : double
+  ! -- read: double
   ! --  * 1D arrays
   subroutine io_read_1d_dp(io, buffer)
     class(PNC_IO_T)       :: io
@@ -1377,6 +1403,11 @@ contains
     class(PNC_IO_T)     :: io
     integer, intent(in) :: datakind
 
+    if (io % fspace_dtype /= -1) then
+      io_filespace_int_datatype_get = io % fspace_dtype
+      return
+    end if
+
     io_filespace_int_datatype_get = 0
     if (datakind == kind(1)) then
       io_filespace_int_datatype_get = io % fspace_dtype_int
@@ -1389,6 +1420,11 @@ contains
   integer function io_filespace_fp_datatype_get(io, datakind)
     class(PNC_IO_T)     :: io
     integer, intent(in) :: datakind
+
+    if (io % fspace_dtype /= -1) then
+      io_filespace_fp_datatype_get = io % fspace_dtype
+      return
+    end if
 
     io_filespace_fp_datatype_get = 0
     if (datakind == kind(1.)) then
