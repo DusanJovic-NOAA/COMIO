@@ -78,7 +78,8 @@ POST_UNINSTALL = :
 check_PROGRAMS = $(am__EXEEXT_1) $(am__EXEEXT_2)
 @HAVE_HDF5_TRUE@am__append_1 = test_comio_hdf_int test_comio_hdf_flt \
 @HAVE_HDF5_TRUE@	test_comio_hdf_dbl test_comio_hdf_d2f \
-@HAVE_HDF5_TRUE@	test_comio_hdf_att test_comio_hdf_dim
+@HAVE_HDF5_TRUE@	test_comio_hdf_att test_comio_hdf_dim \
+@HAVE_HDF5_TRUE@	test_comio_hdf_grp
 @HAVE_PNETCDF_TRUE@am__append_2 = test_comio_pnc_int \
 @HAVE_PNETCDF_TRUE@	test_comio_pnc_flt test_comio_pnc_dbl \
 @HAVE_PNETCDF_TRUE@	test_comio_pnc_d2f test_comio_pnc_att \
@@ -102,7 +103,8 @@ CONFIG_CLEAN_VPATH_FILES =
 @HAVE_HDF5_TRUE@	test_comio_hdf_dbl$(EXEEXT) \
 @HAVE_HDF5_TRUE@	test_comio_hdf_d2f$(EXEEXT) \
 @HAVE_HDF5_TRUE@	test_comio_hdf_att$(EXEEXT) \
-@HAVE_HDF5_TRUE@	test_comio_hdf_dim$(EXEEXT)
+@HAVE_HDF5_TRUE@	test_comio_hdf_dim$(EXEEXT) \
+@HAVE_HDF5_TRUE@	test_comio_hdf_grp$(EXEEXT)
 @HAVE_PNETCDF_TRUE@am__EXEEXT_2 = test_comio_pnc_int$(EXEEXT) \
 @HAVE_PNETCDF_TRUE@	test_comio_pnc_flt$(EXEEXT) \
 @HAVE_PNETCDF_TRUE@	test_comio_pnc_dbl$(EXEEXT) \
@@ -149,6 +151,14 @@ am__test_comio_hdf_flt_SOURCES_DIST = test_comio_mod.F90 \
 test_comio_hdf_flt_OBJECTS = $(am_test_comio_hdf_flt_OBJECTS)
 test_comio_hdf_flt_LDADD = $(LDADD)
 test_comio_hdf_flt_DEPENDENCIES = $(top_builddir)/src/libcomio.a
+am__test_comio_hdf_grp_SOURCES_DIST = test_comio_mod.F90 \
+	test_comio_hdf_grp.F90
+@HAVE_HDF5_TRUE@am_test_comio_hdf_grp_OBJECTS =  \
+@HAVE_HDF5_TRUE@	test_comio_mod.$(OBJEXT) \
+@HAVE_HDF5_TRUE@	test_comio_hdf_grp.$(OBJEXT)
+test_comio_hdf_grp_OBJECTS = $(am_test_comio_hdf_grp_OBJECTS)
+test_comio_hdf_grp_LDADD = $(LDADD)
+test_comio_hdf_grp_DEPENDENCIES = $(top_builddir)/src/libcomio.a
 am__test_comio_hdf_int_SOURCES_DIST = test_comio_mod.F90 \
 	test_comio_hdf_int.F90
 @HAVE_HDF5_TRUE@am_test_comio_hdf_int_OBJECTS =  \
@@ -233,15 +243,17 @@ am__v_FCLD_0 = @echo "  FCLD    " $@;
 am__v_FCLD_1 = 
 SOURCES = $(test_comio_hdf_att_SOURCES) $(test_comio_hdf_d2f_SOURCES) \
 	$(test_comio_hdf_dbl_SOURCES) $(test_comio_hdf_dim_SOURCES) \
-	$(test_comio_hdf_flt_SOURCES) $(test_comio_hdf_int_SOURCES) \
-	$(test_comio_pnc_att_SOURCES) $(test_comio_pnc_d2f_SOURCES) \
-	$(test_comio_pnc_dbl_SOURCES) $(test_comio_pnc_dim_SOURCES) \
-	$(test_comio_pnc_flt_SOURCES) $(test_comio_pnc_int_SOURCES)
+	$(test_comio_hdf_flt_SOURCES) $(test_comio_hdf_grp_SOURCES) \
+	$(test_comio_hdf_int_SOURCES) $(test_comio_pnc_att_SOURCES) \
+	$(test_comio_pnc_d2f_SOURCES) $(test_comio_pnc_dbl_SOURCES) \
+	$(test_comio_pnc_dim_SOURCES) $(test_comio_pnc_flt_SOURCES) \
+	$(test_comio_pnc_int_SOURCES)
 DIST_SOURCES = $(am__test_comio_hdf_att_SOURCES_DIST) \
 	$(am__test_comio_hdf_d2f_SOURCES_DIST) \
 	$(am__test_comio_hdf_dbl_SOURCES_DIST) \
 	$(am__test_comio_hdf_dim_SOURCES_DIST) \
 	$(am__test_comio_hdf_flt_SOURCES_DIST) \
+	$(am__test_comio_hdf_grp_SOURCES_DIST) \
 	$(am__test_comio_hdf_int_SOURCES_DIST) \
 	$(am__test_comio_pnc_att_SOURCES_DIST) \
 	$(am__test_comio_pnc_d2f_SOURCES_DIST) \
@@ -415,6 +427,7 @@ LDADD = $(top_builddir)/src/libcomio.a
 @HAVE_HDF5_TRUE@test_comio_hdf_d2f_SOURCES = test_comio_mod.F90 test_comio_hdf_d2f.F90
 @HAVE_HDF5_TRUE@test_comio_hdf_att_SOURCES = test_comio_mod.F90 test_comio_hdf_att.F90
 @HAVE_HDF5_TRUE@test_comio_hdf_dim_SOURCES = test_comio_mod.F90 test_comio_hdf_dim.F90
+@HAVE_HDF5_TRUE@test_comio_hdf_grp_SOURCES = test_comio_mod.F90 test_comio_hdf_grp.F90
 @HAVE_PNETCDF_TRUE@test_comio_pnc_int_SOURCES = test_comio_mod.F90 test_comio_pnc_int.F90
 @HAVE_PNETCDF_TRUE@test_comio_pnc_flt_SOURCES = test_comio_mod.F90 test_comio_pnc_flt.F90
 @HAVE_PNETCDF_TRUE@test_comio_pnc_dbl_SOURCES = test_comio_mod.F90 test_comio_pnc_dbl.F90
@@ -480,6 +493,10 @@ test_comio_hdf_dim$(EXEEXT): $(test_comio_hdf_dim_OBJECTS) $(test_comio_hdf_dim_
 test_comio_hdf_flt$(EXEEXT): $(test_comio_hdf_flt_OBJECTS) $(test_comio_hdf_flt_DEPENDENCIES) $(EXTRA_test_comio_hdf_flt_DEPENDENCIES) 
 	@rm -f test_comio_hdf_flt$(EXEEXT)
 	$(AM_V_FCLD)$(FCLINK) $(test_comio_hdf_flt_OBJECTS) $(test_comio_hdf_flt_LDADD) $(LIBS)
+
+test_comio_hdf_grp$(EXEEXT): $(test_comio_hdf_grp_OBJECTS) $(test_comio_hdf_grp_DEPENDENCIES) $(EXTRA_test_comio_hdf_grp_DEPENDENCIES) 
+	@rm -f test_comio_hdf_grp$(EXEEXT)
+	$(AM_V_FCLD)$(FCLINK) $(test_comio_hdf_grp_OBJECTS) $(test_comio_hdf_grp_LDADD) $(LIBS)
 
 test_comio_hdf_int$(EXEEXT): $(test_comio_hdf_int_OBJECTS) $(test_comio_hdf_int_DEPENDENCIES) $(EXTRA_test_comio_hdf_int_DEPENDENCIES) 
 	@rm -f test_comio_hdf_int$(EXEEXT)
@@ -776,6 +793,7 @@ $(srcdir)/testsuite.at:
 @HAVE_HDF5_TRUE@test_comio_hdf_d2f.$(OBJEXT) : test_comio_mod.$(OBJEXT)
 @HAVE_HDF5_TRUE@test_comio_hdf_att.$(OBJEXT) : test_comio_mod.$(OBJEXT)
 @HAVE_HDF5_TRUE@test_comio_hdf_dim.$(OBJEXT) : test_comio_mod.$(OBJEXT)
+@HAVE_HDF5_TRUE@test_comio_hdf_grp.$(OBJEXT) : test_comio_mod.$(OBJEXT)
 @HAVE_PNETCDF_TRUE@test_comio_pnc_int.$(OBJEXT) : test_comio_mod.$(OBJEXT)
 @HAVE_PNETCDF_TRUE@test_comio_pnc_flt.$(OBJEXT) : test_comio_mod.$(OBJEXT)
 @HAVE_PNETCDF_TRUE@test_comio_pnc_dbl.$(OBJEXT) : test_comio_mod.$(OBJEXT)

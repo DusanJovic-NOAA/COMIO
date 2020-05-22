@@ -8,6 +8,10 @@ AT_SETUP([HDF5: floating point I/O])
 echo ">>> TEST PASSED" > expout
 AT_CHECK([../../run_comio ../../test_comio_hdf_flt],[],[expout],[ignore])
 AT_CLEANUP
+AT_SETUP([HDF5: floating point I/O with subgroups])
+echo ">>> TEST PASSED" > expout
+AT_CHECK([../../run_comio ../../test_comio_hdf_grp],[],[expout],[ignore])
+AT_CLEANUP
 AT_SETUP([HDF5: double precision I/O])
 echo ">>> TEST PASSED" > expout
 AT_CHECK([../../run_comio ../../test_comio_hdf_dbl],[],[expout],[ignore])

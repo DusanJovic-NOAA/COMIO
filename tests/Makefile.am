@@ -64,18 +64,21 @@ check_PROGRAMS += test_comio_hdf_dbl
 check_PROGRAMS += test_comio_hdf_d2f
 check_PROGRAMS += test_comio_hdf_att
 check_PROGRAMS += test_comio_hdf_dim
+check_PROGRAMS += test_comio_hdf_grp
 test_comio_hdf_int_SOURCES = test_comio_mod.F90 test_comio_hdf_int.F90
 test_comio_hdf_flt_SOURCES = test_comio_mod.F90 test_comio_hdf_flt.F90
 test_comio_hdf_dbl_SOURCES = test_comio_mod.F90 test_comio_hdf_dbl.F90
 test_comio_hdf_d2f_SOURCES = test_comio_mod.F90 test_comio_hdf_d2f.F90
 test_comio_hdf_att_SOURCES = test_comio_mod.F90 test_comio_hdf_att.F90
 test_comio_hdf_dim_SOURCES = test_comio_mod.F90 test_comio_hdf_dim.F90
+test_comio_hdf_grp_SOURCES = test_comio_mod.F90 test_comio_hdf_grp.F90
 test_comio_hdf_int.$(OBJEXT) : test_comio_mod.$(OBJEXT)
 test_comio_hdf_flt.$(OBJEXT) : test_comio_mod.$(OBJEXT)
 test_comio_hdf_dbl.$(OBJEXT) : test_comio_mod.$(OBJEXT)
 test_comio_hdf_d2f.$(OBJEXT) : test_comio_mod.$(OBJEXT)
 test_comio_hdf_att.$(OBJEXT) : test_comio_mod.$(OBJEXT)
 test_comio_hdf_dim.$(OBJEXT) : test_comio_mod.$(OBJEXT)
+test_comio_hdf_grp.$(OBJEXT) : test_comio_mod.$(OBJEXT)
 endif
 if HAVE_PNETCDF
 check_PROGRAMS += test_comio_pnc_int

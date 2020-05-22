@@ -329,6 +329,13 @@ contains
       nullify(io % mcount)
     end if
 
+    ! -- release and terminate access to associated dataspace
+    if (io % filespace /= H5S_ALL_F) then
+      call h5sclose_f(io % filespace, io % err % rc)
+      if (io % err % check(line=__LINE__)) return
+      io % filespace = H5S_ALL_F
+    end if
+
   end subroutine io_domain_clear
 
   subroutine io_domain_set(io, fdims, mstart, mcount)
@@ -394,12 +401,58 @@ contains
 
   ! -- Groups APIs
 
+  logical function io_group_inquire(io, grpname, create)
+    class(HDF5_IO_T)              :: io
+    character(len=*),  intent(in) :: grpname
+    logical, optional, intent(in) :: create
+
+    integer :: rc
+    integer :: ib, ie
+    logical :: grp_create, grp_exists
+
+    io_group_inquire = .false.
+
+    grp_create = .false.
+    if (present(create)) grp_create = create
+
+    ! -- check if file is open
+    if (io % file_id /= -1) then
+      ! -- traverse path to check for each intermediate group
+      ib = 1
+      ie = index(grpname(ib:), "/")
+      grp_exists = .true.
+      do while ((ie >= ib) .and. grp_exists)
+        ! -- check if group exists
+        call h5lexists_f(io % file_id, grpname(1:ie), &
+          grp_exists, rc)
+        if (.not.grp_exists .and. grp_create) then
+          ! -- create group if requested
+          call h5gcreate_f(io % file_id, grpname(1:ie), &
+            io % grp_id, io % err % rc)
+          if (io % err % check(line=__LINE__)) return
+          grp_exists = .true.
+        end if
+        ib = ie + 1
+        ie = index(grpname(ib:), "/") + ib - 1
+      end do
+      io_group_inquire = grp_exists
+    end if
+
+  end function io_group_inquire
+
   subroutine io_group_create(io, grpname)
     class(HDF5_IO_T)             :: io
     character(len=*), intent(in) :: grpname
 
-    call h5gcreate_f(io % file_id, grpname, io % grp_id, io % err % rc)
-    if (io % err % check(line=__LINE__)) return
+    ! -- check if file is open
+    if (io % file_id /= -1) then
+      ! -- create each intermediate group if needed
+      if (io % err % check( &
+        .not.io_group_inquire(io, grpname, create=.true.), &
+        msg="Unable to create group "//trim(grpname), &
+        line=__LINE__)) return
+    end if
+
   end subroutine io_group_create
 
   ! -- Datasets APIs
@@ -410,14 +463,18 @@ contains
 
     integer :: rc
 
-    ! -- begin
     io_dataset_inquire = .false.
 
     ! -- check if file is open
     if (io % file_id /= -1) then
       ! -- dataset exists if link resolves to actual object
-      call h5lexists_f(io % file_id, dsetname, &
-        io_dataset_inquire, rc)
+      ! -- HDF5 requires us to traverse the path explicitly
+      ! -- thus we check for each intermediate group first
+      if (io_group_inquire(io, dsetname)) then
+        ! -- check if object exists
+        call h5lexists_f(io % file_id, dsetname, &
+          io_dataset_inquire, rc)
+      end if
     end if
 
   end function io_dataset_inquire
@@ -444,11 +501,13 @@ contains
       call io_dataset_open(io, dsetname)
       if (io % err % check(line=__LINE__)) return
     else
+      ! -- create associated group if it does not exist
+      call io_group_create(io, dsetname)
+      if (io % err % check(line=__LINE__)) return
       ! -- select hyperslab for data I/O
       call h5sselect_hyperslab_f(io % filespace, H5S_SELECT_SET_F, &
         io % mstart, io % mcount, io % err % rc)
       if (io % err % check(line=__LINE__)) return
-
       ! -- create dataset
       call h5dcreate_f(io % file_id, dsetname, dsettype, io % filespace, &
         io % dset_id, io % err % rc, dcpl_id = io % dcrt_plist_id)
@@ -479,11 +538,6 @@ contains
   subroutine io_dataset_close(io)
     class(HDF5_IO_T) :: io
 
-    if (io % filespace /= H5S_ALL_F) then
-      call h5sclose_f(io % filespace, io % err % rc)
-      if (io % err % check(line=__LINE__)) return
-      io % filespace = H5S_ALL_F
-    end if
     if (io % dset_id /= -1) then
       call h5dclose_f(io % dset_id, io % err % rc)
       if (io % err % check(msg="Unable to close dataset", line=__LINE__)) return
