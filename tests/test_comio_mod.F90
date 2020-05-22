@@ -174,6 +174,24 @@ contains
     call io % close()
   end subroutine test_comio_att_write
 
+  subroutine test_comio_mds_write(name)
+    character(len=*), intent(in) :: name
+    character(len=80) :: dname
+    integer :: i
+    ! -- and data decomposition
+    call test_comio_decomp(ldx,ldy)
+    ! -- write to file
+    call io % open(filename, "c")
+    call io % domain((/ DX, DY /), mstart, mcount)
+    do i = 1, 5
+      write(dname,'(a,i0)') trim(name), i
+      ! -- create data
+      ddata = i * (2.d0 * prank + 1.d0)
+      call io % write(dname, ddata)
+    end do
+    call io % close()
+  end subroutine test_comio_mds_write
+
   logical function test_comio_int_validate(name)
     character(len=*), intent(in) :: name
     ! -- default
@@ -239,5 +257,32 @@ contains
     ! -- free up memory
     deallocate(dims)
   end function test_comio_dim_validate
+
+  logical function test_comio_mds_validate(name)
+    character(len=*), intent(in) :: name
+    character(len=80) :: dname
+    integer :: i, ierr
+    ! -- default
+    test_comio_mds_validate = .false.
+    ! -- set data decomposition
+    call test_comio_decomp(ldx,ldy)
+    ! -- read from file
+    call io % open(filename, "r")
+    call io % domain((/ DX, DY /), mstart, mcount)
+    i = 0
+    test_comio_mds_validate = .true.
+    do while (test_comio_mds_validate .and. (i<5))
+      test_comio_mds_validate = .false.
+      i = i + 1
+      ! -- read data
+      write(dname,'(a,i0)') trim(name), i
+      ddata = 0.d0
+      call io % read(dname, ddata)
+      ! -- validate data
+      test_comio_mds_validate = all(ddata == i*(2.d0*prank+1.d0))
+      if (.not.test_comio_mds_validate) exit
+    end do
+    call io % close()
+  end function test_comio_mds_validate
 
 end module test_comio_mod
