@@ -232,7 +232,7 @@ contains
     character(len=*), intent(in) :: mode
 
     select case (mode)
-      case ("c", "C")
+      case ("c", "c+", "C", "C+")
         call h5fcreate_f(filename, H5F_ACC_TRUNC_F, io % file_id, &
           io % err % rc, creation_prp = io % fcrt_plist_id,          &
           access_prp = io % facc_plist_id)

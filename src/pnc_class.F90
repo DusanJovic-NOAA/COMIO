@@ -6,6 +6,7 @@ module pnc_class
   use pnetcdf
   use comio_class
   use io_prec
+  use io_utils
 
   implicit none
 
@@ -148,6 +149,30 @@ contains
     io % readonly = .false.
 
     select case (mode)
+      case ("c+", "C+")
+        select case (io_link_check(filename, comm=io % comm))
+          case (0)
+            ! -- default create mode
+            io % cmode = NF90_CLOBBER
+          case (1)
+            ! -- preserve links
+            io % cmode = NF90_NOCLOBBER
+          case (-1)
+            call io % err % set(msg="Unable to check link: "//filename, line=__LINE__)
+            return
+        end select
+        io % cmode = IOR(io % cmode, NF90_64BIT_OFFSET)
+        io % err % rc = nf90mpi_create(io % comm, filename, &
+          io % cmode, io % info, io % file_id)
+        if (io % err % check(msg=nf90mpi_strerror(io % err % rc), &
+          line=__LINE__)) return
+        ! -- disable define mode
+        io % err % rc = nf90mpi_enddef(io % file_id)
+        if (io % err % check(msg=nf90mpi_strerror(io % err % rc), &
+          line=__LINE__)) return
+        ! -- write domain decomposition to file if set
+        call io_domain_write(io)
+        if (io % err % check(line=__LINE__)) return
       case ("c", "C")
         io % cmode = IOR(NF90_CLOBBER, NF90_64BIT_OFFSET)
         io % err % rc = nf90mpi_create(io % comm, filename, &
