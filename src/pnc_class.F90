@@ -26,6 +26,11 @@ module pnc_class
     integer :: fspace_dtype_float  = NF90_FLOAT
     integer :: fspace_dtype_double = NF90_DOUBLE
 
+    integer  :: fspace_dfill        = .false.
+    integer  :: fspace_dfill_int    = NF90_FILL_INT
+    real(sp) :: fspace_dfill_float  = NF90_FILL_FLOAT
+    real(dp) :: fspace_dfill_double = NF90_FILL_DOUBLE
+
     integer :: cmode      = -1
 
     logical :: paused     = .false.
@@ -47,6 +52,7 @@ module pnc_class
     procedure :: io_domain_set
     procedure :: io_pause
 
+    procedure :: io_datafill
     procedure :: io_datatype
 
     procedure :: io_dataset_get_dims
@@ -429,6 +435,19 @@ contains
         io % fdim_id, io % dset_id)
       if (io % err % check(msg=nf90mpi_strerror(io % err % rc), line=__LINE__)) return
 
+      if (io % fspace_dfill) then
+        if      (dsettype == io % ms_itype_get(kind(1)) ) then
+          io % err % rc = nf90mpi_def_var_fill(io % file_id, io % dset_id, 0, io % fspace_dfill_int)
+          if (io % err % check(msg=nf90mpi_strerror(io % err % rc), line=__LINE__)) return
+        else if (dsettype == io % ms_ftype_get(sp)      ) then
+          io % err % rc = nf90mpi_def_var_fill(io % file_id, io % dset_id, 0, io % fspace_dfill_float)
+          if (io % err % check(msg=nf90mpi_strerror(io % err % rc), line=__LINE__)) return
+        else if (dsettype == io % ms_ftype_get(dp)      ) then
+          io % err % rc = nf90mpi_def_var_fill(io % file_id, io % dset_id, 0, io % fspace_dfill_double)
+          if (io % err % check(msg=nf90mpi_strerror(io % err % rc), line=__LINE__)) return
+        end if
+      end if
+
       io % err % rc = nf90mpi_enddef(io % file_id)
       if (io % err % check(msg=nf90mpi_strerror(io % err % rc), line=__LINE__)) return
     end if
@@ -561,6 +580,38 @@ contains
 
     io % paused = flag
   end subroutine io_pause
+
+  ! -- set write data fill value or mode
+  subroutine io_datafill(io, dvalue)
+    class(PNC_IO_T)                :: io
+    class(*), optional, intent(in) :: dvalue
+
+    io % fspace_dfill = .true.
+
+    if (present(dvalue)) then
+      select type (dvalue)
+        type is (logical)
+          io % fspace_dfill = dvalue
+        type is (integer)
+          io % fspace_dfill_int    = dvalue
+          io % fspace_dfill_float  = dvalue
+          io % fspace_dfill_double = dvalue
+        type is (real(sp))
+          io % fspace_dfill_int    = dvalue
+          io % fspace_dfill_float  = dvalue
+          io % fspace_dfill_double = dvalue
+        type is (real(dp))
+          io % fspace_dfill_int    = dvalue
+          io % fspace_dfill_float  = dvalue
+          io % fspace_dfill_double = dvalue
+        class default
+          io % fspace_dfill        = .false.
+          call io % err % set(msg="Datatype unknown", line=__LINE__)
+          return
+      end select
+    end if
+
+  end subroutine io_datafill
 
   ! -- set write data type for automatic conversion
   subroutine io_datatype(io, dtype)

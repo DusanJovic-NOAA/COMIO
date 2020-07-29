@@ -29,7 +29,7 @@ module test_comio_mod
   integer,  dimension(MAX_DIMS) :: mstart, mcount
   integer,  dimension(lix,liy)  :: idata
   real(sp), dimension(lrx,lry)  :: rdata
-  real(dp), dimension(ldx,ldy)  :: ddata
+  real(dp), dimension(ldx,ldy)  :: ddata, ddata2
 
   character(len=1024) :: filename = ""
 
@@ -158,6 +158,27 @@ contains
     call io % close()
   end subroutine test_comio_d2f_write
 
+  subroutine test_comio_dff_write(name)
+    character(len=*), intent(in) :: name
+    double precision, parameter :: fill_value = -999.d0
+    ! -- create data
+    ddata = 2.d0 * prank + 1.d0
+    ! -- and data decomposition
+    call test_comio_decomp(ldx,ldy)
+    ! -- write to file
+    call io % open(filename, "c")
+    call io % domain((/ DX, DY /), &
+      (/mstart(1)+1,mstart(2)/), (/mcount(1)-1,mcount(2)/))
+    call io % writeas(1.)
+    call io % fill(fill_value)
+    call io % write(trim(name)//"_fill", ddata)
+    call io % fill(.false.)
+    call io % domain((/ DX, DY /), mstart, mcount)
+    ddata(1,:) = fill_value
+    call io % write(trim(name)//"_nofill",ddata)
+    call io % close()
+  end subroutine test_comio_dff_write
+
   subroutine test_comio_att_write(name)
     character(len=*), intent(in) :: name
     ! -- create data
@@ -225,6 +246,28 @@ contains
     ! -- validate data
     test_comio_flt_validate = all(rdata == 10. + prank)
   end function test_comio_flt_validate
+
+  logical function test_comio_dff_validate(name)
+    character(len=*), intent(in) :: name
+    integer :: ierr
+    double precision, parameter :: fill_value = -999.d0
+    ! -- default
+    test_comio_dff_validate = .false.
+    ! -- set data decomposition
+    call test_comio_decomp(ldx,ldy)
+    ! -- read from file
+    call io % open(filename, "r")
+    call io % domain((/ DX, DY /), mstart, mcount)
+    call io % read(trim(name)//"_fill", ddata)
+    call io % read(trim(name)//"_nofill", ddata2)
+    call io % close()
+    ! -- validate data
+    test_comio_dff_validate = all(ddata(1,:) == fill_value)
+    if (test_comio_dff_validate) &
+      test_comio_dff_validate = all(ddata(2:,:) == 2.d0*prank+1.d0)
+    if (test_comio_dff_validate) &
+      test_comio_dff_validate = all(ddata == ddata2)
+  end function test_comio_dff_validate
 
   logical function test_comio_dbl_validate(name)
     character(len=*), intent(in) :: name

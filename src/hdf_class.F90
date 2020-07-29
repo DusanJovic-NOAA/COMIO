@@ -44,6 +44,7 @@ module hdf_class
     procedure :: io_domain_set
     procedure :: io_pause
 
+    procedure :: io_datafill
     procedure :: io_datatype
 
     procedure :: io_dataset_get_dims
@@ -607,6 +608,39 @@ contains
 
     io % paused = flag
   end subroutine io_pause
+
+  ! -- set write data fill value or mode
+  subroutine io_datafill(io, dvalue)
+    class(HDF5_IO_T)               :: io
+    class(*), optional, intent(in) :: dvalue
+
+    if (present(dvalue)) then
+      select type (dvalue)
+        type is (logical)
+          if (.not.dvalue) then
+            call h5pset_fill_value_f(io % dcrt_plist_id, io % ms_itype_get(kind(1)), &
+              H5D_FILL_VALUE_UNDEFINED_F, io % err % rc)
+            if (io % err % check(line=__LINE__)) return
+          end if
+        type is (integer)
+          call h5pset_fill_value_f(io % dcrt_plist_id, io % ms_itype_get(kind(1)), &
+            dvalue, io % err % rc)
+          if (io % err % check(line=__LINE__)) return
+        type is (real(sp))
+          call h5pset_fill_value_f(io % dcrt_plist_id, io % ms_ftype_get(sp), &
+            dvalue, io % err % rc)
+          if (io % err % check(line=__LINE__)) return
+        type is (real(dp))
+          call h5pset_fill_value_f(io % dcrt_plist_id, io % ms_ftype_get(dp), &
+            dvalue, io % err % rc)
+          if (io % err % check(line=__LINE__)) return
+        class default
+          call io % err % set(msg="Datatype unknown", line=__LINE__)
+          return
+      end select
+    end if
+
+  end subroutine io_datafill
 
   ! -- set write data type for automatic conversion
   subroutine io_datatype(io, dtype)

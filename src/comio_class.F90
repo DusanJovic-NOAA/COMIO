@@ -40,6 +40,7 @@ module comio_class
                            io_dataset_write_1d_dp,  &
                            io_dataset_write_2d_dp,  &
                            io_dataset_write_3d_dp
+    generic :: fill     => io_datafill
     generic :: writeas  => io_datatype
     generic :: describe => io_describe_string,         &
                            io_describe_int,            &
@@ -65,6 +66,7 @@ module comio_class
     procedure(io_file_close_if),              deferred :: io_file_close
     procedure(io_domain_set_if),              deferred :: io_domain_set
     procedure(io_pause_if     ),              deferred :: io_pause
+    procedure(io_datafill_if),                deferred :: io_datafill
     procedure(io_datatype_if),                deferred :: io_datatype
     procedure(io_dataset_get_dims_if),        deferred :: io_dataset_get_dims
     procedure(io_dataset_read_1d_int_if),     deferred :: io_dataset_read_1d_int
@@ -142,6 +144,12 @@ module comio_class
       import
       class(COMIO_T)      :: io
       logical, intent(in) :: flag
+    end subroutine
+    ! -- set write data fill value or mode
+    subroutine io_datafill_if(io, dvalue)
+      import
+      class(COMIO_T)                 :: io
+      class(*), optional, intent(in) :: dvalue
     end subroutine
     ! -- set write data type for automatic conversion
     subroutine io_datatype_if(io, dtype)

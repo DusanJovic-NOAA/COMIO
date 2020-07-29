@@ -24,6 +24,10 @@ AT_SETUP([HDF5: double precision to single precision])
 echo ">>> TEST PASSED" > expout
 AT_CHECK([../../run_comio ../../test_comio_hdf_d2f],[],[expout],[ignore])
 AT_CLEANUP
+AT_SETUP([HDF5: double to single precision w/ fill])
+echo ">>> TEST PASSED" > expout
+AT_CHECK([../../run_comio ../../test_comio_hdf_dff],[],[expout],[ignore])
+AT_CLEANUP
 AT_SETUP([HDF5: inquire dataset dimensions])
 echo ">>> TEST PASSED" > expout
 AT_CHECK([../../run_comio ../../test_comio_hdf_dim],[],[expout],[ignore])
@@ -51,6 +55,10 @@ AT_CLEANUP
 AT_SETUP([PnetCDF: double precision to single precision])
 echo ">>> TEST PASSED" > expout
 AT_CHECK([../../run_comio ../../test_comio_pnc_d2f],[],[expout],[ignore])
+AT_CLEANUP
+AT_SETUP([PnetCDF: double to single precision w/ fill])
+echo ">>> TEST PASSED" > expout
+AT_CHECK([../../run_comio ../../test_comio_pnc_dff],[],[expout],[ignore])
 AT_CLEANUP
 AT_SETUP([PnetCDF: inquire dataset dimensions])
 echo ">>> TEST PASSED" > expout
