@@ -24,6 +24,7 @@ cross_compiling=yes
 save_ac_tool_warned=${ac_tool_warned}
 ac_tool_warned=yes
 AC_PROG_CC([${CC} mpiicc mpicc mpicc_r mpcc_r mpcc mpixlc_r mpixlc mpipgcc mppgcc mpigcc mpgcc mpigcc_r mpgcc_r icc cc gcc])
+AM_PROG_CC_C_O
 AC_PROG_FC([${FC} mpiifort mpifort mpif90 mpixlf90_r mpxlf90_r mpipgf90 mpipgf95 mppgf90 mppgf95])
 
 # Restore original cross compilation settings
@@ -228,6 +229,8 @@ AS_ECHO("")
 AS_ECHO("${PACKAGE_NAME} version ${PACKAGE_VERSION} successfully configured.")
 AS_ECHO("")
 AS_ECHO("Compiler settings:")
+AS_ECHO("  CC      = ${CC}")
+AS_ECHO("  CFLAGS  = ${CFLAGS}")
 AS_ECHO("  FC      = ${FC}")
 AS_ECHO("  F77     = ${F77}")
 AS_ECHO("  FCFLAGS = ${FCFLAGS}")
