@@ -5,7 +5,8 @@ module test_comio_mod
 
   implicit none
 
-  integer :: prank, psize
+  integer, parameter :: sp = kind(1.0)
+  integer, parameter :: dp = kind(1.d0)
 
   integer, parameter :: MAX_DIMS = 2
   integer, parameter :: NUM_DE_X = 2
@@ -23,10 +24,12 @@ module test_comio_mod
   integer, parameter :: LOG_UNIT = 6
   integer, parameter :: RC_FAILURE = 99
 
-  integer, dimension(lix,liy)  :: idata
-  integer, dimension(lrx,lry)  :: rdata
-  integer, dimension(ldx,ldy)  :: ddata
-  integer, dimension(MAX_DIMS) :: mstart, mcount
+  integer :: prank, psize
+
+  integer,  dimension(MAX_DIMS) :: mstart, mcount
+  integer,  dimension(lix,liy)  :: idata
+  real(sp), dimension(lrx,lry)  :: rdata
+  real(dp), dimension(ldx,ldy)  :: ddata
 
   character(len=1024) :: filename = ""
 
