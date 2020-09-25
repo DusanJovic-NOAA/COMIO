@@ -1327,16 +1327,11 @@ contains
 
     integer(HID_T)   :: aspace_id, attr_id, atype_id
     integer(HSIZE_T) :: dims(1)
-    type(C_PTR)         :: f_ptr
-    type(C_PTR), target :: wdata
-    character(len=255, kind=C_CHAR), target :: cvalue
+    type(C_PTR)      :: f_ptr
+    character(len=len_trim(value)+1, kind=C_CHAR), target :: cvalue
 
-    ! -- check if dataset exists
+    ! -- check if file is open
     if (io % file_id /= -1) then
-      ! -- prep work
-      write(cvalue, '(a)') trim(value)//C_NULL_CHAR
-      wdata = C_LOC(cvalue)
-      f_ptr = C_LOC(wdata)
       ! -- create attribute dataspace
       dims = 0
       call h5screate_simple_f(0, dims, aspace_id, io % err % rc)
@@ -1349,6 +1344,8 @@ contains
         io % err % rc)
       if (io % err % check(line=__LINE__)) return
       ! -- write attribute to file
+      cvalue = trim(value) // C_NULL_CHAR
+      f_ptr  = C_LOC(C_LOC(cvalue))
       call h5awrite_f(attr_id, atype_id, f_ptr, io % err % rc)
       if (io % err % check(line=__LINE__)) return
       ! -- release attribute id
@@ -1579,16 +1576,11 @@ contains
 
     integer(HID_T)   :: aspace_id, attr_id, atype_id
     integer(HSIZE_T) :: dims(1)
-    type(C_PTR)         :: f_ptr
-    type(C_PTR), target :: wdata
-    character(len=255, kind=C_CHAR), target :: cvalue
+    type(C_PTR)      :: f_ptr
+    character(len=len_trim(value)+1, kind=C_CHAR), target :: cvalue
 
     ! -- check if dataset exists
     if (io_dataset_inquire(io, dsetname)) then
-      ! -- prep work
-      write(cvalue, '(a)') trim(value)//C_NULL_CHAR
-      wdata = C_LOC(cvalue)
-      f_ptr = C_LOC(wdata)
       ! -- open dataset if present
       call h5dopen_f(io % file_id, dsetname, io % dset_id, io % err % rc)
       if (io % err % check(line=__LINE__)) return
@@ -1604,6 +1596,8 @@ contains
                        io % err % rc)
       if (io % err % check(line=__LINE__)) return
       ! -- write attribute to file
+      cvalue = trim(value) // C_NULL_CHAR
+      f_ptr  = C_LOC(C_LOC(cvalue))
       call h5awrite_f(attr_id, atype_id, f_ptr, io % err % rc)
       if (io % err % check(line=__LINE__)) return
       ! -- release attribute id
@@ -1870,35 +1864,31 @@ contains
 
   ! -- get description:
   ! -- global
+
   subroutine io_description_string(io, key, value)
     class(HDF5_IO_T)              :: io
     character(len=*), intent(in)  :: key
     character(len=*), intent(out) :: value
 
-    integer(HID_T)   :: attr_id
-    integer(HSIZE_T) :: dims, alen, maxdims
-    integer, parameter :: maxlen=255
-    type(C_PTR) :: f_ptr
-    type(C_PTR), TARGET :: rdata
-    character(len = maxlen, kind=c_char), pointer :: data
+    integer             :: idx
+    integer(HID_T)      :: attr_id
+    type(C_PTR)         :: f_ptr
+    type(C_PTR), target :: rdata
+    character(len=len(value)+1), pointer :: data
 
     ! -- check if file is open
     if (io % file_id /= -1) then
-      dims = 0
       ! -- get attribute id
       call h5aopen_f(io % file_id, trim(key), attr_id, io % err % rc)
       if (io % err % check(line=__LINE__)) return
-      f_ptr = C_LOC(rdata)
       ! -- get attribute
+      f_ptr = C_LOC(rdata)
       call h5aread_f(attr_id, H5T_STRING, f_ptr, io % err % rc)
       if (io % err % check(line=__LINE__)) return
+      ! -- copy attribute string to output string
       call c_f_pointer(rdata, data)
-      alen = 0
-      do
-        if(data(alen+1:alen+1).eq.C_NULL_CHAR .or. alen.ge.len(value)) EXIT
-        alen = alen + 1
-      end do
-      write(value,'(a)') data(1:alen)
+      idx = index(data, C_NULL_CHAR) - 1
+      value = data(1:idx)
       ! -- release attribute id
       call h5aclose_f(attr_id, io % err % rc)
       if (io % err % check(line=__LINE__)) return
@@ -2094,12 +2084,11 @@ contains
     character(len=*), intent(in)  :: key
     character(len=*), intent(out) :: value
 
-    integer(HID_T)   :: attr_id
-    integer(HSIZE_T) :: alen
-    integer, parameter :: maxlen=255
-    type(C_PTR) :: f_ptr
-    type(C_PTR), TARGET :: rdata
-    character(len = maxlen, kind=c_char), pointer :: data
+    integer             :: idx
+    integer(HID_T)      :: attr_id
+    type(C_PTR)         :: f_ptr
+    type(C_PTR), target :: rdata
+    character(len=len(value)+1), pointer :: data
 
     ! -- check if dataset exists
     if (io_dataset_inquire(io, dsetname)) then
@@ -2109,18 +2098,14 @@ contains
       ! -- get attribute id
       call h5aopen_f(io % dset_id, trim(key), attr_id, io % err % rc)
       if (io % err % check(line=__LINE__)) return
-      f_ptr = C_LOC(rdata)
       ! -- get attribute
+      f_ptr = C_LOC(rdata)
       call h5aread_f(attr_id, H5T_STRING, f_ptr, io % err % rc)
       if (io % err % check(line=__LINE__)) return
+      ! -- copy attribute string to output string
       call c_f_pointer(rdata, data)
-      alen = 0
-      do
-        if(data(alen+1:alen+1).eq.C_NULL_CHAR .or. alen.ge.len(value)) EXIT
-        alen = alen + 1
-      end do
-      write(value,'(a)') data(1:alen)
-
+      idx = index(data, C_NULL_CHAR) - 1
+      value = data(1:idx)
       ! -- release attribute id
       call h5aclose_f(attr_id, io % err % rc)
       if (io % err % check(line=__LINE__)) return
