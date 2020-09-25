@@ -10,7 +10,7 @@ program test_comio_pnc_att
   call test_comio_start(COMIO_FMT_PNETCDF)
   filename = "test_comio_att.nc"
   call test_comio_att_write("data")
-  status =  test_comio_dbl_validate("data")
+  status =  test_comio_att_validate("data")
   call test_comio_result(status)
   call test_comio_stop
 

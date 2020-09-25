@@ -216,6 +216,51 @@ contains
     call io % close()
   end subroutine test_comio_mds_write
 
+  logical function test_comio_att_validate(name)
+    character(len=*), intent(in) :: name
+    integer           :: ivalue(2)
+    real(dp)          :: dvalue
+    character(len=16) :: svalue
+    ! -- default
+    test_comio_att_validate = .false.
+    ! -- and data decomposition
+    call test_comio_decomp(ldx,ldy)
+    ! -- write to file
+    call io % open(filename, "r")
+    call io % domain((/ DX, DY /), mstart, mcount)
+    call io % read(name, ddata)
+    ! -- validate data
+    test_comio_att_validate = all(ddata == 2.d0*prank+1.d0)
+    ! -- validate dataset string attribute
+    call io % description(name, "units", svalue)
+    test_comio_att_validate = trim(svalue) == "kg m-3"
+    ! -- validate dataset dbl attributes
+    if (test_comio_att_validate) then
+      call io % description(name, "min", dvalue)
+      test_comio_att_validate = dvalue == 1.d0
+    end if
+    if (test_comio_att_validate) then
+      call io % description(name, "max", dvalue)
+      test_comio_att_validate = dvalue == 9.d0
+    end if
+    ! -- validate dataset integer array attributes
+    if (test_comio_att_validate) then
+      call io % description(name, "decomp", ivalue)
+      test_comio_att_validate = all(ivalue == (/ ldx, ldy /))
+    end if
+    ! -- validate global string attribute
+    if (test_comio_att_validate) then
+      call io % description("unit_test", svalue)
+      test_comio_att_validate = trim(svalue) == "COMIO attributes"
+    end if
+    ! -- validate global integer array attribute
+    if (test_comio_att_validate) then
+      call io % description("domain_array", ivalue)
+      test_comio_att_validate = all(ivalue == (/ DX, DY /))
+    end if
+    call io % close()
+  end function test_comio_att_validate
+
   logical function test_comio_int_validate(name)
     character(len=*), intent(in) :: name
     ! -- default
