@@ -88,6 +88,20 @@ module pnc_class
                  io_dataset_describe_1d_sp,  &
                  io_dataset_describe_dp,     &
                  io_dataset_describe_1d_dp
+    procedure :: io_description_string,         &
+                 io_description_int,            &
+                 io_description_1d_int,         &
+                 io_description_sp,             &
+                 io_description_1d_sp,          &
+                 io_description_dp,             &
+                 io_description_1d_dp,          &
+                 io_dataset_description_string, &
+                 io_dataset_description_int,    &
+                 io_dataset_description_1d_int, &
+                 io_dataset_description_sp,     &
+                 io_dataset_description_1d_sp,  &
+                 io_dataset_description_dp,     &
+                 io_dataset_description_1d_dp
 
     procedure :: fs_itype_get => io_filespace_int_datatype_get
     procedure :: fs_ftype_get => io_filespace_fp_datatype_get
@@ -1443,6 +1457,234 @@ contains
 
   end subroutine io_dataset_describe_1d_dp
 
+  ! -- getting description (attribute)
+  ! -- global
+
+  subroutine io_description_string(io, key, value)
+    class(PNC_IO_T)               :: io
+    character(len=*), intent(in)  :: key
+    character(len=*), intent(out) :: value
+
+    if (io % file_id /= -1) then
+
+      ! -- get attribute
+      io % err % rc = nf90mpi_get_att(io % file_id, NF90_GLOBAL, trim(key), value)
+      if (io % err % check(msg=nf90mpi_strerror(io % err % rc), line=__LINE__)) return
+
+    end if
+
+  end subroutine io_description_string
+
+  subroutine io_description_int(io, key, value)
+    class(PNC_IO_T)               :: io
+    character(len=*), intent(in)  :: key
+    integer,          intent(out) :: value
+
+    if (io % file_id /= -1) then
+
+      ! -- get attribute
+      io % err % rc = nf90mpi_get_att(io % file_id, NF90_GLOBAL, trim(key), value)
+      if (io % err % check(msg=nf90mpi_strerror(io % err % rc), line=__LINE__)) return
+
+    end if
+
+  end subroutine io_description_int
+
+  subroutine io_description_1d_int(io, key, values)
+    class(PNC_IO_T)               :: io
+    character(len=*), intent(in)  :: key
+    integer,          intent(out) :: values(:)
+
+    if (io % file_id /= -1) then
+
+      ! -- get attribute
+      io % err % rc = nf90mpi_get_att(io % file_id, NF90_GLOBAL, trim(key), values)
+      if (io % err % check(msg=nf90mpi_strerror(io % err % rc), line=__LINE__)) return
+
+    end if
+
+  end subroutine io_description_1d_int
+
+  subroutine io_description_sp(io, key, value)
+    class(PNC_IO_T)               :: io
+    character(len=*), intent(in)  :: key
+    real(sp),         intent(out) :: value
+
+    if (io % file_id /= -1) then
+
+      ! -- get attribute
+      io % err % rc = nf90mpi_get_att(io % file_id, NF90_GLOBAL, trim(key), value)
+      if (io % err % check(msg=nf90mpi_strerror(io % err % rc), line=__LINE__)) return
+
+    end if
+
+  end subroutine io_description_sp
+
+  subroutine io_description_1d_sp(io, key, values)
+    class(PNC_IO_T)               :: io
+    character(len=*), intent(in)  :: key
+    real(sp),         intent(out) :: values(:)
+
+    if (io % file_id /= -1) then
+
+      ! -- get attribute
+      io % err % rc = nf90mpi_get_att(io % file_id, NF90_GLOBAL, trim(key), values)
+      if (io % err % check(msg=nf90mpi_strerror(io % err % rc), line=__LINE__)) return
+
+    end if
+
+  end subroutine io_description_1d_sp
+
+  subroutine io_description_dp(io, key, value)
+    class(PNC_IO_T)               :: io
+    character(len=*), intent(in)  :: key
+    real(dp),         intent(out) :: value
+
+    if (io % file_id /= -1) then
+
+      ! -- get attribute
+      io % err % rc = nf90mpi_get_att(io % file_id, NF90_GLOBAL, trim(key), value)
+      if (io % err % check(msg=nf90mpi_strerror(io % err % rc), line=__LINE__)) return
+
+    end if
+
+  end subroutine io_description_dp
+
+  subroutine io_description_1d_dp(io, key, values)
+    class(PNC_IO_T)               :: io
+    character(len=*), intent(in)  :: key
+    real(dp),         intent(out) :: values(:)
+
+    if (io % file_id /= -1) then
+
+      ! -- get attribute
+      io % err % rc = nf90mpi_get_att(io % file_id, NF90_GLOBAL, trim(key), values)
+      if (io % err % check(msg=nf90mpi_strerror(io % err % rc), line=__LINE__)) return
+
+    end if
+
+  end subroutine io_description_1d_dp
+
+  ! -- variables
+
+  subroutine io_dataset_description_string(io, dsetname, key, value)
+    class(PNC_IO_T)               :: io
+    character(len=*), intent(in)  :: dsetname
+    character(len=*), intent(in)  :: key
+    character(len=*), intent(out) :: value
+
+    ! -- check if dataset exists
+    if (io_dataset_inquire(io, dsetname)) then
+
+      ! -- get attribute
+      io % err % rc = nf90mpi_get_att(io % file_id, io % dset_id, trim(key), value)
+      if (io % err % check(msg=nf90mpi_strerror(io % err % rc), line=__LINE__)) return
+
+    end if
+
+  end subroutine io_dataset_description_string
+
+  subroutine io_dataset_description_int(io, dsetname, key, value)
+    class(PNC_IO_T)               :: io
+    character(len=*), intent(in)  :: dsetname
+    character(len=*), intent(in)  :: key
+    integer,          intent(out) :: value
+
+    ! -- check if dataset exists
+    if (io_dataset_inquire(io, dsetname)) then
+
+      ! -- get attribute
+      io % err % rc = nf90mpi_get_att(io % file_id, io % dset_id, trim(key), value)
+      if (io % err % check(msg=nf90mpi_strerror(io % err % rc), line=__LINE__)) return
+
+    end if
+
+  end subroutine io_dataset_description_int
+
+  subroutine io_dataset_description_1d_int(io, dsetname, key, values)
+    class(PNC_IO_T)               :: io
+    character(len=*), intent(in)  :: dsetname
+    character(len=*), intent(in)  :: key
+    integer,          intent(out) :: values(:)
+
+    ! -- check if dataset exists
+    if (io_dataset_inquire(io, dsetname)) then
+
+      ! -- get attribute
+      io % err % rc = nf90mpi_get_att(io % file_id, io % dset_id, trim(key), values)
+      if (io % err % check(msg=nf90mpi_strerror(io % err % rc), line=__LINE__)) return
+
+    end if
+
+  end subroutine io_dataset_description_1d_int
+
+  subroutine io_dataset_description_sp(io, dsetname, key, value)
+    class(PNC_IO_T)               :: io
+    character(len=*), intent(in)  :: dsetname
+    character(len=*), intent(in)  :: key
+    real(sp),         intent(out) :: value
+
+    ! -- check if dataset exists
+    if (io_dataset_inquire(io, dsetname)) then
+
+      ! -- get attribute
+      io % err % rc = nf90mpi_get_att(io % file_id, io % dset_id, trim(key), value)
+      if (io % err % check(msg=nf90mpi_strerror(io % err % rc), line=__LINE__)) return
+
+    end if
+
+  end subroutine io_dataset_description_sp
+
+  subroutine io_dataset_description_1d_sp(io, dsetname, key, values)
+    class(PNC_IO_T)               :: io
+    character(len=*), intent(in)  :: dsetname
+    character(len=*), intent(in)  :: key
+    real(sp),         intent(out) :: values(:)
+
+    ! -- check if dataset exists
+    if (io_dataset_inquire(io, dsetname)) then
+
+      ! -- get attribute
+      io % err % rc = nf90mpi_get_att(io % file_id, io % dset_id, trim(key), values)
+      if (io % err % check(msg=nf90mpi_strerror(io % err % rc), line=__LINE__)) return
+
+    end if
+
+  end subroutine io_dataset_description_1d_sp
+
+  subroutine io_dataset_description_dp(io, dsetname, key, value)
+    class(PNC_IO_T)               :: io
+    character(len=*), intent(in)  :: dsetname
+    character(len=*), intent(in)  :: key
+    real(dp),         intent(out) :: value
+
+    ! -- check if dataset exists
+    if (io_dataset_inquire(io, dsetname)) then
+
+      ! -- get attribute
+      io % err % rc = nf90mpi_get_att(io % file_id, io % dset_id, trim(key), value)
+      if (io % err % check(msg=nf90mpi_strerror(io % err % rc), line=__LINE__)) return
+
+    end if
+
+  end subroutine io_dataset_description_dp
+
+  subroutine io_dataset_description_1d_dp(io, dsetname, key, values)
+    class(PNC_IO_T)               :: io
+    character(len=*), intent(in)  :: dsetname
+    character(len=*), intent(in)  :: key
+    real(dp),         intent(out) :: values(:)
+
+    ! -- check if dataset exists
+    if (io_dataset_inquire(io, dsetname)) then
+
+      ! -- get attribute
+      io % err % rc = nf90mpi_get_att(io % file_id, io % dset_id, trim(key), values)
+      if (io % err % check(msg=nf90mpi_strerror(io % err % rc), line=__LINE__)) return
+
+    end if
+
+  end subroutine io_dataset_description_1d_dp
 
   ! -- Utilities
 
