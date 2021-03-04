@@ -265,6 +265,65 @@ contains
 
   end subroutine io_file_open
 
+  integer(SIZE_T) function io_obj_count(io, obj_type)
+    class(HDF5_IO_T)    :: io
+    integer, intent(in) :: obj_type
+
+    io_obj_count = 0
+
+    if (io % file_id /= -1) then
+
+      ! -- retrieve object count
+      call h5fget_obj_count_f(io % file_id, obj_type, io_obj_count, io % err % rc)
+      if (io % err % check(line=__LINE__)) return
+
+    end if
+
+  end function io_obj_count
+
+  subroutine io_obj_close(io, obj_type)
+    class(HDF5_IO_T)    :: io
+    integer, intent(in) :: obj_type
+
+    integer         :: obj
+    integer(SIZE_T) :: obj_count
+    integer(HID_T), allocatable :: obj_ids(:)
+
+    if (io % file_id /= -1) then
+
+      ! -- retrieve object count
+      obj_count = 0
+      call h5fget_obj_count_f(io % file_id, obj_type, obj_count, io % err % rc)
+      if (io % err % check(line=__LINE__)) return
+
+      if (obj_count > 0) then
+        allocate(obj_ids(obj_count), stat = io % err % rc)
+        if (io % err % check(line=__LINE__, msg="Unable to allocate memory")) return
+        call h5fget_obj_ids_f(io % file_id, obj_type, obj_count, obj_ids, io % err % rc)
+        if (io % err % check(line=__LINE__)) return
+        do obj = 1, obj_count
+          if      (obj_type == H5F_OBJ_FILE_F) then
+            call h5fclose_f(obj_ids(obj), io % err % rc)
+            if (io % err % check(msg="Unable to close file",     line=__LINE__)) return
+          else if (obj_type == H5F_OBJ_GROUP_F) then
+            call h5gclose_f(obj_ids(obj), io % err % rc)
+            if (io % err % check(msg="Unable to close group",    line=__LINE__)) return
+          else if (obj_type == H5F_OBJ_DATASET_F) then
+            call h5dclose_f(obj_ids(obj), io % err % rc)
+            if (io % err % check(msg="Unable to close dataset",  line=__LINE__)) return
+          else if (obj_type == H5F_OBJ_DATATYPE_F) then
+            call h5tclose_f(obj_ids(obj), io % err % rc)
+            if (io % err % check(msg="Unable to close datatype", line=__LINE__)) return
+          end if
+        end do
+        deallocate(obj_ids, stat = io % err % rc)
+        if (io % err % check(line=__LINE__, msg="Unable to free memory")) return
+      end if
+
+    end if
+
+  end subroutine io_obj_close
+
   subroutine io_file_close(io)
     class(HDF5_IO_T) :: io
 
@@ -275,42 +334,26 @@ contains
     if (io % file_id /= -1) then
 
       ! -- close datasets
-      call h5fget_obj_count_f(io % file_id, H5F_OBJ_DATASET_F, obj_count, io % err % rc)
+      call io_obj_close(io, H5F_OBJ_DATASET_F)
       if (io % err % check(line=__LINE__)) return
 
-      allocate(obj_ids(obj_count), stat = io % err % rc)
-      if (io % err % check(line=__LINE__, msg="Unable to allocate memory")) return
+      ! -- release and terminate access to associated dataspace
+      if (io % filespace /= H5S_ALL_F) then
+        call h5sclose_f(io % filespace, io % err % rc)
+        if (io % err % check(line=__LINE__)) return
+        io % filespace = H5S_ALL_F
+      end if
 
-      call h5fget_obj_ids_f(io % file_id, H5F_OBJ_DATASET_F, obj_count, obj_ids, io % err % rc)
+      ! -- close datatypes
+      call io_obj_close(io, H5F_OBJ_DATATYPE_F)
       if (io % err % check(line=__LINE__)) return
-
-      do obj = 1, obj_count
-        call h5dclose_f(obj_ids(obj), io % err % rc)
-        if (io % err % check(msg="Unable to close dataset", line=__LINE__)) return
-      end do
-
-      deallocate(obj_ids, stat = io % err % rc)
-      if (io % err % check(line=__LINE__, msg="Unable to free memory")) return
 
       ! -- close groups
-      call h5fget_obj_count_f(io % file_id, H5F_OBJ_GROUP_F, obj_count, io % err % rc)
+      call io_obj_close(io, H5F_OBJ_GROUP_F)
       if (io % err % check(line=__LINE__)) return
 
-      allocate(obj_ids(obj_count), stat = io % err % rc)
-      if (io % err % check(line=__LINE__, msg="Unable to allocate memory")) return
-
-      call h5fget_obj_ids_f(io % file_id, H5F_OBJ_GROUP_F, obj_count, obj_ids, io % err % rc)
-      if (io % err % check(line=__LINE__)) return
-
-      do obj = 1, size(obj_ids)
-        call h5gclose_f(obj_ids(obj), io % err % rc)
-        if (io % err % check(msg="Unable to close group", line=__LINE__)) return
-      end do
-
-      deallocate(obj_ids, stat = io % err % rc)
-      if (io % err % check(line=__LINE__, msg="Unable to free memory")) return
-
-      call h5fclose_f(io % file_id, io % err % rc)
+      ! -- close files
+      call io_obj_close(io, H5F_OBJ_FILE_F)
       if (io % err % check(line=__LINE__)) return
 
       io % file_id = -1
