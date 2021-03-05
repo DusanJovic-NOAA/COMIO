@@ -33,7 +33,7 @@ module test_comio_mod
 
   character(len=1024) :: filename = ""
 
-  class(COMIO_T), pointer :: io => null()
+  class(COMIO_T), allocatable :: io
 
 contains
 
@@ -54,12 +54,12 @@ contains
     rdata = 0.
     ddata = 0.d0
     ! -- initialize COMIO
-    io => COMIO_T(fmt=fmt, comm=MPI_COMM_WORLD, info=MPI_INFO_NULL)
+    call comio_create(io, fmt, comm=MPI_COMM_WORLD, info=MPI_INFO_NULL)
   end subroutine test_comio_start
 
   subroutine test_comio_stop
     integer :: ierr
-    if (associated(io)) then
+    if (allocated(io)) then
       call io % shutdown()
       deallocate(io)
     end if
