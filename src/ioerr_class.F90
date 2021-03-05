@@ -30,11 +30,12 @@ module ioerr_class
 
 contains
 
-  logical function check_rc(this, msg, file, line)
-    class(IOERR_T)                         :: this
-    character(len=*), optional, intent(in) :: msg
-    character(len=*), optional, intent(in) :: file
-    integer,          optional, intent(in) :: line
+  logical function check_rc(this, msg, file, line, rc)
+    class(IOERR_T)                          :: this
+    character(len=*), optional, intent(in)  :: msg
+    character(len=*), optional, intent(in)  :: file
+    integer,          optional, intent(in)  :: line
+    integer,          optional, intent(out) :: rc
 
     character(len=IOERR_MSGLEN) :: errmsg
 
@@ -61,31 +62,36 @@ contains
       this % rc = this % failure
 
     end if
+
+    if (present(rc)) rc = this % rc
     
   end function check_rc
 
-  logical function check_status(this, status, msg, file, line)
-    class(IOERR_T)                         :: this
-    logical                   , intent(in) :: status
-    character(len=*), optional, intent(in) :: msg
-    character(len=*), optional, intent(in) :: file
-    integer,          optional, intent(in) :: line
+  logical function check_status(this, status, msg, file, line, rc)
+    class(IOERR_T)                          :: this
+    logical                   , intent(in)  :: status
+    character(len=*), optional, intent(in)  :: msg
+    character(len=*), optional, intent(in)  :: file
+    integer,          optional, intent(in)  :: line
+    integer,          optional, intent(out) :: rc
 
     if (status) this % rc = this % failure
     check_status = this % check(msg=msg, line=line)
+    if (present(rc)) rc = this % rc
 
   end function check_status
 
-  subroutine set(this, msg, file, line)
-    class(IOERR_T)                         :: this
-    character(len=*), optional, intent(in) :: msg
-    character(len=*), optional, intent(in) :: file
-    integer,          optional, intent(in) :: line
+  subroutine set(this, msg, file, line, rc)
+    class(IOERR_T)                          :: this
+    character(len=*), optional, intent(in)  :: msg
+    character(len=*), optional, intent(in)  :: file
+    integer,          optional, intent(in)  :: line
+    integer,          optional, intent(out) :: rc
 
     logical :: errflag
 
     this % rc = this % failure
-    errflag = this % check(msg=msg, file=file, line=line)
+    errflag = this % check(msg=msg, file=file, line=line, rc=rc)
 
   end subroutine set
   
