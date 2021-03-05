@@ -13,7 +13,7 @@ module ioerr_class
 
   type IOERR_T
     integer             :: success  = IOERR_SUCCESS
-    integer             :: failure  = IOERR_SUCCESS
+    integer             :: failure  = IOERR_FAILURE
     integer             :: rc       = IOERR_SUCCESS
     integer             :: errlog   = IOERR_IOUNIT
     character(len=IOERR_MSGLEN) :: message = ""
