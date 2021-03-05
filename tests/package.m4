@@ -4,9 +4,9 @@ m4_define([AT_PACKAGE_NAME],
 m4_define([AT_PACKAGE_TARNAME],
   [comio])
 m4_define([AT_PACKAGE_VERSION],
-  [0.0.5])
+  [0.0.7])
 m4_define([AT_PACKAGE_STRING],
-  [comio 0.0.6])
+  [comio 0.0.7])
 m4_define([AT_PACKAGE_BUGREPORT],
   [ipe_devteam@noaa.gov])
 m4_define([AT_PACKAGE_URL],
