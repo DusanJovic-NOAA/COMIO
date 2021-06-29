@@ -26,7 +26,7 @@ module pnc_class
     integer :: fspace_dtype_float  = NF90_FLOAT
     integer :: fspace_dtype_double = NF90_DOUBLE
 
-    integer  :: fspace_dfill        = .false.
+    logical  :: fspace_dfill        = .false.
     integer  :: fspace_dfill_int    = NF90_FILL_INT
     real(sp) :: fspace_dfill_float  = NF90_FILL_FLOAT
     real(dp) :: fspace_dfill_double = NF90_FILL_DOUBLE

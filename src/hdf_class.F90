@@ -1371,6 +1371,7 @@ contains
     integer(HID_T)   :: aspace_id, attr_id, atype_id
     integer(HSIZE_T) :: dims(1)
     type(C_PTR)      :: f_ptr
+    type(C_PTR), target :: intermediate
     character(len=len_trim(value)+1, kind=C_CHAR), target :: cvalue
 
     ! -- check if file is open
@@ -1388,7 +1389,8 @@ contains
       if (io % err % check(line=__LINE__)) return
       ! -- write attribute to file
       cvalue = trim(value) // C_NULL_CHAR
-      f_ptr  = C_LOC(C_LOC(cvalue))
+      intermediate = C_LOC(cvalue)
+      f_ptr  = C_LOC(intermediate)
       call h5awrite_f(attr_id, atype_id, f_ptr, io % err % rc)
       if (io % err % check(line=__LINE__)) return
       ! -- release attribute id
@@ -1620,6 +1622,7 @@ contains
     integer(HID_T)   :: aspace_id, attr_id, atype_id
     integer(HSIZE_T) :: dims(1)
     type(C_PTR)      :: f_ptr
+    type(C_PTR), target :: intermediate
     character(len=len_trim(value)+1, kind=C_CHAR), target :: cvalue
 
     ! -- check if dataset exists
@@ -1640,7 +1643,8 @@ contains
       if (io % err % check(line=__LINE__)) return
       ! -- write attribute to file
       cvalue = trim(value) // C_NULL_CHAR
-      f_ptr  = C_LOC(C_LOC(cvalue))
+      intermediate = C_LOC(cvalue)
+      f_ptr  = C_LOC(intermediate)
       call h5awrite_f(attr_id, atype_id, f_ptr, io % err % rc)
       if (io % err % check(line=__LINE__)) return
       ! -- release attribute id
