@@ -225,10 +225,17 @@ contains
 
   end subroutine io_file_open
 
+  logical function io_file_isopen(io)
+    class(PNC_IO_T) :: io
+
+    io_file_isopen = (io % file_id /= -1)
+
+  end function io_file_isopen
+
   subroutine io_file_close(io)
     class(PNC_IO_T) :: io
 
-    if (io % file_id /= -1) then
+    if (io_file_isopen(io)) then
 
       io % err % rc = nf90mpi_close(io % file_id)
       if (io % err % check(msg=nf90mpi_strerror(io % err % rc), &
@@ -246,6 +253,38 @@ contains
   end subroutine io_file_close
 
   ! -- Data layout APIs
+
+  subroutine io_domain_check(io, fdims, mstart, mcount)
+    class(PNC_IO_T)                   :: io
+    integer, dimension(:), intent(in) :: fdims
+    integer, dimension(:), intent(in) :: mstart
+    integer, dimension(:), intent(in) :: mcount
+
+    integer :: ndims
+
+    if (io % err % check(any(fdims < 0), line=__LINE__, &
+      msg="Invalid domain: fdims < 0")) return
+
+    ndims = size(fdims)
+    if (io % err % check(size(mstart) /= ndims, &
+      line=__LINE__, &
+      msg="Array size mismatch: mstart, fdims")) return
+
+    if (io % err % check(any(mstart < 0), line=__LINE__, &
+      msg="Invalid domain: mstart < 0")) return
+
+    if (io % err % check(size(mcount) /= ndims, &
+      line=__LINE__, &
+      msg="Array size mismatch: mcount, fdims")) return
+
+    if (io % err % check(any(mcount < 0), line=__LINE__, &
+      msg="Invalid domain: mcount < 0")) return
+
+    if (io % err % check(any(mstart + mcount - 1 > fdims), &
+      line=__LINE__, &
+      msg="Inconsistent data decomposition")) return
+
+  end subroutine io_domain_check
 
   subroutine io_domain_clear(io)
     class(PNC_IO_T) :: io
@@ -281,18 +320,8 @@ contains
     integer, dimension(:), intent(in) :: mcount
 
     ! -- perform sanity check on input
-    if (io % err % check(any(fdims < 0), line=__LINE__, &
-      msg="Invalid argument: fdims < 0")) return
-
-    if (io % err % check(any(mstart < 0), line=__LINE__, &
-      msg="Invalid argument: mstart < 0")) return
-
-    if (io % err % check(any(mcount < 0), line=__LINE__, &
-      msg="Invalid argument: mcount < 0")) return
-
-    if (io % err % check(any(mstart + mcount - 1 > fdims), &
-      line=__LINE__, &
-      msg="Invalid argument: Inconsistent data decomposition")) return
+    call io_domain_check(io, fdims, mstart, mcount)
+    if (io % err % check(line=__LINE__, msg="Invalid argument(s): inconsistent domain decomposition")) return
 
     ! -- clear existing domain decomposition
     call io_domain_clear(io)
@@ -336,7 +365,7 @@ contains
     if (.not.associated(io % fdims)) return
 
     ! -- check if file is open
-    if (io % file_id == -1) return
+    if (.not.io_file_isopen(io)) return
 
     ! -- check if file is opened as  only
     if (io % readonly) return
@@ -410,7 +439,7 @@ contains
     io_dataset_inquire = .false.
 
     ! -- check if file is open
-    if (io % file_id /= -1) then
+    if (io_file_isopen(io)) then
       ! -- test if dataset exists by inquiring for the variable id
       rc = nf90mpi_inq_varid(io % file_id, dsetname, dset_id)
       io_dataset_inquire = (rc == NF90_NOERR)
@@ -475,7 +504,7 @@ contains
     integer :: ndims, item
 
     ! -- check if file is open
-    if (io % file_id == -1) return
+    if (.not.io_file_isopen(io)) return
 
     ! -- get variable id
     io % err % rc = nf90mpi_inq_varid(io % file_id, dsetname, io % dset_id)
@@ -521,10 +550,19 @@ contains
       if (io % err % check(msg=nf90mpi_strerror(io % err % rc), line=__LINE__)) return
     end do
 
-    ! -- check if variable dimensions are consistent with domain decomposition
-    if (io % err % check(any(io % mstart + io % mcount - 1 > io % fdims), &
-      line=__LINE__, &
-      msg="Inconsistent data decomposition")) return
+    if (associated(io % mstart) .and. associated(io % mcount)) then
+      ! -- if domain decomposition is set, check if it is consistent with dataset dimensions
+      call io_domain_check(io, int(io % fdims), int(io % mstart), int(io % mcount))
+      if (io % err % check(line=__LINE__)) return
+    else
+      ! -- set default domain decomposition as global
+      if (associated(io % mstart)) deallocate(io % mstart)
+      allocate(io % mstart(ndims))
+      io % mstart = 1
+      if (associated(io % mcount)) deallocate(io % mcount)
+      allocate(io % mcount(ndims))
+      io % mcount = io % fdims
+    end if
     
   end subroutine io_dataset_open
 
@@ -545,7 +583,7 @@ contains
     integer, dimension(:), allocatable :: dimids
 
     ! -- check if file is open
-    if (io % file_id == -1) return
+    if (.not.io_file_isopen(io)) return
 
     ! -- check if pointer is associated
     if (associated(dims)) then
@@ -657,9 +695,11 @@ contains
     integer, intent(out) :: buffer(:)
 
     buffer = 0
-    io % err % rc = nf90mpi_get_var_all(io % file_id, io % dset_id, buffer, &
-      start = io % mstart, count = io % mcount)
-    if (io % err % check(msg=nf90mpi_strerror(io % err % rc), line=__LINE__)) return
+    if (io_file_isopen(io)) then
+      io % err % rc = nf90mpi_get_var_all(io % file_id, io % dset_id, buffer, &
+        start = io % mstart, count = io % mcount)
+      if (io % err % check(msg=nf90mpi_strerror(io % err % rc), line=__LINE__)) return
+    end if
 
   end subroutine io_read_1d_int
 
@@ -669,9 +709,11 @@ contains
     integer, intent(out) :: buffer(:,:)
 
     buffer = 0
-    io % err % rc = nf90mpi_get_var_all(io % file_id, io % dset_id, buffer, &
-      start = io % mstart, count = io % mcount)
-    if (io % err % check(msg=nf90mpi_strerror(io % err % rc), line=__LINE__)) return
+    if (io_file_isopen(io)) then
+      io % err % rc = nf90mpi_get_var_all(io % file_id, io % dset_id, buffer, &
+        start = io % mstart, count = io % mcount)
+      if (io % err % check(msg=nf90mpi_strerror(io % err % rc), line=__LINE__)) return
+    end if
 
   end subroutine io_read_2d_int
 
@@ -681,9 +723,11 @@ contains
     integer, intent(out) :: buffer(:,:,:)
 
     buffer = 0
-    io % err % rc = nf90mpi_get_var_all(io % file_id, io % dset_id, buffer, &
-      start = io % mstart, count = io % mcount)
-    if (io % err % check(msg=nf90mpi_strerror(io % err % rc), line=__LINE__)) return
+    if (io_file_isopen(io)) then
+      io % err % rc = nf90mpi_get_var_all(io % file_id, io % dset_id, buffer, &
+        start = io % mstart, count = io % mcount)
+      if (io % err % check(msg=nf90mpi_strerror(io % err % rc), line=__LINE__)) return
+    end if
 
   end subroutine io_read_3d_int
 
@@ -694,9 +738,11 @@ contains
     real(sp), intent(out) :: buffer(:)
 
     buffer = 0._sp
-    io % err % rc = nf90mpi_get_var_all(io % file_id, io % dset_id, buffer, &
-      start = io % mstart, count = io % mcount)
-    if (io % err % check(msg=nf90mpi_strerror(io % err % rc), line=__LINE__)) return
+    if (io_file_isopen(io)) then
+      io % err % rc = nf90mpi_get_var_all(io % file_id, io % dset_id, buffer, &
+        start = io % mstart, count = io % mcount)
+      if (io % err % check(msg=nf90mpi_strerror(io % err % rc), line=__LINE__)) return
+    end if
 
   end subroutine io_read_1d_sp
 
@@ -706,9 +752,11 @@ contains
     real(sp), intent(out) :: buffer(:,:)
 
     buffer = 0._sp
-    io % err % rc = nf90mpi_get_var_all(io % file_id, io % dset_id, buffer, &
-      start = io % mstart, count = io % mcount)
-    if (io % err % check(msg=nf90mpi_strerror(io % err % rc), line=__LINE__)) return
+    if (io_file_isopen(io)) then
+      io % err % rc = nf90mpi_get_var_all(io % file_id, io % dset_id, buffer, &
+        start = io % mstart, count = io % mcount)
+      if (io % err % check(msg=nf90mpi_strerror(io % err % rc), line=__LINE__)) return
+    end if
 
   end subroutine io_read_2d_sp
 
@@ -718,9 +766,11 @@ contains
     real(sp), intent(out) :: buffer(:,:,:)
 
     buffer = 0._sp
-    io % err % rc = nf90mpi_get_var_all(io % file_id, io % dset_id, buffer, &
-      start = io % mstart, count = io % mcount)
-    if (io % err % check(msg=nf90mpi_strerror(io % err % rc), line=__LINE__)) return
+    if (io_file_isopen(io)) then
+      io % err % rc = nf90mpi_get_var_all(io % file_id, io % dset_id, buffer, &
+        start = io % mstart, count = io % mcount)
+      if (io % err % check(msg=nf90mpi_strerror(io % err % rc), line=__LINE__)) return
+    end if
 
   end subroutine io_read_3d_sp
 
@@ -731,9 +781,11 @@ contains
     real(dp), intent(out) :: buffer(:)
 
     buffer = 0._dp
-    io % err % rc = nf90mpi_get_var_all(io % file_id, io % dset_id, buffer, &
-      start = io % mstart, count = io % mcount)
-    if (io % err % check(msg=nf90mpi_strerror(io % err % rc), line=__LINE__)) return
+    if (io_file_isopen(io)) then
+      io % err % rc = nf90mpi_get_var_all(io % file_id, io % dset_id, buffer, &
+        start = io % mstart, count = io % mcount)
+      if (io % err % check(msg=nf90mpi_strerror(io % err % rc), line=__LINE__)) return
+    end if
 
   end subroutine io_read_1d_dp
 
@@ -743,9 +795,11 @@ contains
     real(dp), intent(out) :: buffer(:,:)
 
     buffer = 0._dp
-    io % err % rc = nf90mpi_get_var_all(io % file_id, io % dset_id, buffer, &
-      start = io % mstart, count = io % mcount)
-    if (io % err % check(msg=nf90mpi_strerror(io % err % rc), line=__LINE__)) return
+    if (io_file_isopen(io)) then
+      io % err % rc = nf90mpi_get_var_all(io % file_id, io % dset_id, buffer, &
+        start = io % mstart, count = io % mcount)
+      if (io % err % check(msg=nf90mpi_strerror(io % err % rc), line=__LINE__)) return
+    end if
 
   end subroutine io_read_2d_dp
 
@@ -755,9 +809,11 @@ contains
     real(dp), intent(out) :: buffer(:,:,:)
 
     buffer = 0._dp
-    io % err % rc = nf90mpi_get_var_all(io % file_id, io % dset_id, buffer, &
-      start = io % mstart, count = io % mcount)
-    if (io % err % check(msg=nf90mpi_strerror(io % err % rc), line=__LINE__)) return
+    if (io_file_isopen(io)) then
+      io % err % rc = nf90mpi_get_var_all(io % file_id, io % dset_id, buffer, &
+        start = io % mstart, count = io % mcount)
+      if (io % err % check(msg=nf90mpi_strerror(io % err % rc), line=__LINE__)) return
+    end if
 
   end subroutine io_read_3d_dp
 
@@ -767,9 +823,11 @@ contains
     class(PNC_IO_T)        :: io
     integer, intent(inout) :: buffer(:)
 
-    io % err % rc = nf90mpi_put_var_all(io % file_id, &
-      io % dset_id, buffer, io % mstart, io % mcount)
-    if (io % err % check(msg=nf90mpi_strerror(io % err % rc), line=__LINE__)) return
+    if (io_file_isopen(io)) then
+      io % err % rc = nf90mpi_put_var_all(io % file_id, &
+        io % dset_id, buffer, io % mstart, io % mcount)
+      if (io % err % check(msg=nf90mpi_strerror(io % err % rc), line=__LINE__)) return
+    end if
 
   end subroutine io_write_1d_int
 
@@ -778,9 +836,11 @@ contains
     class(PNC_IO_T)        :: io
     integer, intent(inout) :: buffer(:,:)
 
-    io % err % rc = nf90mpi_put_var_all(io % file_id, &
-      io % dset_id, buffer, io % mstart, io % mcount)
-    if (io % err % check(msg=nf90mpi_strerror(io % err % rc), line=__LINE__)) return
+    if (io_file_isopen(io)) then
+      io % err % rc = nf90mpi_put_var_all(io % file_id, &
+        io % dset_id, buffer, io % mstart, io % mcount)
+      if (io % err % check(msg=nf90mpi_strerror(io % err % rc), line=__LINE__)) return
+    end if
 
   end subroutine io_write_2d_int
 
@@ -789,9 +849,11 @@ contains
     class(PNC_IO_T)        :: io
     integer, intent(inout) :: buffer(:,:,:)
 
-    io % err % rc = nf90mpi_put_var_all(io % file_id, &
-      io % dset_id, buffer, io % mstart, io % mcount)
-    if (io % err % check(msg=nf90mpi_strerror(io % err % rc), line=__LINE__)) return
+    if (io_file_isopen(io)) then
+      io % err % rc = nf90mpi_put_var_all(io % file_id, &
+        io % dset_id, buffer, io % mstart, io % mcount)
+      if (io % err % check(msg=nf90mpi_strerror(io % err % rc), line=__LINE__)) return
+    end if
 
   end subroutine io_write_3d_int
 
@@ -801,9 +863,11 @@ contains
     class(PNC_IO_T)         :: io
     real(sp), intent(inout) :: buffer(:)
 
-    io % err % rc = nf90mpi_put_var_all(io % file_id, &
-      io % dset_id, buffer, io % mstart, io % mcount)
-    if (io % err % check(msg=nf90mpi_strerror(io % err % rc), line=__LINE__)) return
+    if (io_file_isopen(io)) then
+      io % err % rc = nf90mpi_put_var_all(io % file_id, &
+        io % dset_id, buffer, io % mstart, io % mcount)
+      if (io % err % check(msg=nf90mpi_strerror(io % err % rc), line=__LINE__)) return
+    end if
 
   end subroutine io_write_1d_sp
 
@@ -812,9 +876,11 @@ contains
     class(PNC_IO_T)         :: io
     real(sp), intent(inout) :: buffer(:,:)
 
-    io % err % rc = nf90mpi_put_var_all(io % file_id, &
-      io % dset_id, buffer, io % mstart, io % mcount)
-    if (io % err % check(msg=nf90mpi_strerror(io % err % rc), line=__LINE__)) return
+    if (io_file_isopen(io)) then
+      io % err % rc = nf90mpi_put_var_all(io % file_id, &
+        io % dset_id, buffer, io % mstart, io % mcount)
+      if (io % err % check(msg=nf90mpi_strerror(io % err % rc), line=__LINE__)) return
+    end if
 
   end subroutine io_write_2d_sp
 
@@ -823,9 +889,11 @@ contains
     class(PNC_IO_T)         :: io
     real(sp), intent(inout) :: buffer(:,:,:)
 
-    io % err % rc = nf90mpi_put_var_all(io % file_id, &
-      io % dset_id, buffer, io % mstart, io % mcount)
-    if (io % err % check(msg=nf90mpi_strerror(io % err % rc), line=__LINE__)) return
+    if (io_file_isopen(io)) then
+      io % err % rc = nf90mpi_put_var_all(io % file_id, &
+        io % dset_id, buffer, io % mstart, io % mcount)
+      if (io % err % check(msg=nf90mpi_strerror(io % err % rc), line=__LINE__)) return
+    end if
 
   end subroutine io_write_3d_sp
 
@@ -835,9 +903,11 @@ contains
     class(PNC_IO_T)         :: io
     real(dp), intent(inout) :: buffer(:)
 
-    io % err % rc = nf90mpi_put_var_all(io % file_id, &
-      io % dset_id, buffer, io % mstart, io % mcount)
-    if (io % err % check(msg=nf90mpi_strerror(io % err % rc), line=__LINE__)) return
+    if (io_file_isopen(io)) then
+      io % err % rc = nf90mpi_put_var_all(io % file_id, &
+        io % dset_id, buffer, io % mstart, io % mcount)
+      if (io % err % check(msg=nf90mpi_strerror(io % err % rc), line=__LINE__)) return
+    end if
 
   end subroutine io_write_1d_dp
 
@@ -846,9 +916,11 @@ contains
     class(PNC_IO_T)         :: io
     real(dp), intent(inout) :: buffer(:,:)
 
-    io % err % rc = nf90mpi_put_var_all(io % file_id, &
-      io % dset_id, buffer, io % mstart, io % mcount)
-    if (io % err % check(msg=nf90mpi_strerror(io % err % rc), line=__LINE__)) return
+    if (io_file_isopen(io)) then
+      io % err % rc = nf90mpi_put_var_all(io % file_id, &
+        io % dset_id, buffer, io % mstart, io % mcount)
+      if (io % err % check(msg=nf90mpi_strerror(io % err % rc), line=__LINE__)) return
+    end if
 
   end subroutine io_write_2d_dp
 
@@ -857,9 +929,11 @@ contains
     class(PNC_IO_T)        :: io
     real(8), intent(inout) :: buffer(:,:,:)
 
-    io % err % rc = nf90mpi_put_var_all(io % file_id, &
-      io % dset_id, buffer, start=io % mstart, count=io % mcount)
-    if (io % err % check(msg=nf90mpi_strerror(io % err % rc), line=__LINE__)) return
+    if (io_file_isopen(io)) then
+      io % err % rc = nf90mpi_put_var_all(io % file_id, &
+        io % dset_id, buffer, start=io % mstart, count=io % mcount)
+      if (io % err % check(msg=nf90mpi_strerror(io % err % rc), line=__LINE__)) return
+    end if
 
   end subroutine io_write_3d_dp
 
@@ -1152,7 +1226,7 @@ contains
     character(len=*), intent(in) :: key
     character(len=*), intent(in) :: value
 
-    if (io % file_id /= -1) then
+    if (io_file_isopen(io)) then
 
       io % err % rc = nf90mpi_redef(io % file_id)
       if (io % err % check(msg=nf90mpi_strerror(io % err % rc), line=__LINE__)) return
@@ -1173,7 +1247,7 @@ contains
     character(len=*), intent(in) :: key
     integer,          intent(in) :: value
 
-    if (io % file_id /= -1) then
+    if (io_file_isopen(io)) then
 
       io % err % rc = nf90mpi_redef(io % file_id)
       if (io % err % check(msg=nf90mpi_strerror(io % err % rc), line=__LINE__)) return
@@ -1194,7 +1268,7 @@ contains
     character(len=*), intent(in) :: key
     integer,          intent(in) :: values(:)
 
-    if (io % file_id /= -1) then
+    if (io_file_isopen(io)) then
 
       io % err % rc = nf90mpi_redef(io % file_id)
       if (io % err % check(msg=nf90mpi_strerror(io % err % rc), line=__LINE__)) return
@@ -1215,7 +1289,7 @@ contains
     character(len=*), intent(in) :: key
     real(sp),         intent(in) :: value
 
-    if (io % file_id /= -1) then
+    if (io_file_isopen(io)) then
 
       io % err % rc = nf90mpi_redef(io % file_id)
       if (io % err % check(msg=nf90mpi_strerror(io % err % rc), line=__LINE__)) return
@@ -1236,7 +1310,7 @@ contains
     character(len=*), intent(in) :: key
     real(sp),         intent(in) :: values(:)
 
-    if (io % file_id /= -1) then
+    if (io_file_isopen(io)) then
 
       io % err % rc = nf90mpi_redef(io % file_id)
       if (io % err % check(msg=nf90mpi_strerror(io % err % rc), line=__LINE__)) return
@@ -1257,7 +1331,7 @@ contains
     character(len=*), intent(in) :: key
     real(dp),         intent(in) :: value
 
-    if (io % file_id /= -1) then
+    if (io_file_isopen(io)) then
 
       io % err % rc = nf90mpi_redef(io % file_id)
       if (io % err % check(msg=nf90mpi_strerror(io % err % rc), line=__LINE__)) return
@@ -1278,7 +1352,7 @@ contains
     character(len=*), intent(in) :: key
     real(dp),         intent(in) :: values(:)
 
-    if (io % file_id /= -1) then
+    if (io_file_isopen(io)) then
 
       io % err % rc = nf90mpi_redef(io % file_id)
       if (io % err % check(msg=nf90mpi_strerror(io % err % rc), line=__LINE__)) return
@@ -1465,7 +1539,7 @@ contains
     character(len=*), intent(in)  :: key
     character(len=*), intent(out) :: value
 
-    if (io % file_id /= -1) then
+    if (io_file_isopen(io)) then
 
       ! -- get attribute
       io % err % rc = nf90mpi_get_att(io % file_id, NF90_GLOBAL, trim(key), value)
@@ -1480,7 +1554,7 @@ contains
     character(len=*), intent(in)  :: key
     integer,          intent(out) :: value
 
-    if (io % file_id /= -1) then
+    if (io_file_isopen(io)) then
 
       ! -- get attribute
       io % err % rc = nf90mpi_get_att(io % file_id, NF90_GLOBAL, trim(key), value)
@@ -1495,7 +1569,7 @@ contains
     character(len=*), intent(in)  :: key
     integer,          intent(out) :: values(:)
 
-    if (io % file_id /= -1) then
+    if (io_file_isopen(io)) then
 
       ! -- get attribute
       io % err % rc = nf90mpi_get_att(io % file_id, NF90_GLOBAL, trim(key), values)
@@ -1510,7 +1584,7 @@ contains
     character(len=*), intent(in)  :: key
     real(sp),         intent(out) :: value
 
-    if (io % file_id /= -1) then
+    if (io_file_isopen(io)) then
 
       ! -- get attribute
       io % err % rc = nf90mpi_get_att(io % file_id, NF90_GLOBAL, trim(key), value)
@@ -1525,7 +1599,7 @@ contains
     character(len=*), intent(in)  :: key
     real(sp),         intent(out) :: values(:)
 
-    if (io % file_id /= -1) then
+    if (io_file_isopen(io)) then
 
       ! -- get attribute
       io % err % rc = nf90mpi_get_att(io % file_id, NF90_GLOBAL, trim(key), values)
@@ -1540,7 +1614,7 @@ contains
     character(len=*), intent(in)  :: key
     real(dp),         intent(out) :: value
 
-    if (io % file_id /= -1) then
+    if (io_file_isopen(io)) then
 
       ! -- get attribute
       io % err % rc = nf90mpi_get_att(io % file_id, NF90_GLOBAL, trim(key), value)
@@ -1555,7 +1629,7 @@ contains
     character(len=*), intent(in)  :: key
     real(dp),         intent(out) :: values(:)
 
-    if (io % file_id /= -1) then
+    if (io_file_isopen(io)) then
 
       ! -- get attribute
       io % err % rc = nf90mpi_get_att(io % file_id, NF90_GLOBAL, trim(key), values)
