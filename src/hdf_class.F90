@@ -265,13 +265,20 @@ contains
 
   end subroutine io_file_open
 
+ logical function io_file_isopen(io)
+    class(HDF5_IO_T) :: io
+
+    io_file_isopen = (io % file_id /= -1)
+
+  end function io_file_isopen
+
   integer(SIZE_T) function io_obj_count(io, obj_type)
     class(HDF5_IO_T)    :: io
     integer, intent(in) :: obj_type
 
     io_obj_count = 0
 
-    if (io % file_id /= -1) then
+    if (io_file_isopen(io)) then
 
       ! -- retrieve object count
       call h5fget_obj_count_f(io % file_id, obj_type, io_obj_count, io % err % rc)
@@ -289,7 +296,7 @@ contains
     integer(SIZE_T) :: obj_count
     integer(HID_T), allocatable :: obj_ids(:)
 
-    if (io % file_id /= -1) then
+    if (io_file_isopen(io)) then
 
       ! -- retrieve object count
       obj_count = 0
@@ -331,7 +338,7 @@ contains
     integer(SIZE_T) :: obj_count
     integer(HID_T), allocatable :: obj_ids(:)
 
-    if (io % file_id /= -1) then
+    if (io_file_isopen(io)) then
 
       ! -- close datasets
       call io_obj_close(io, H5F_OBJ_DATASET_F)
@@ -475,7 +482,7 @@ contains
     if (present(create)) grp_create = create
 
     ! -- check if file is open
-    if (io % file_id /= -1) then
+    if (io_file_isopen(io)) then
       ! -- traverse path to check for each intermediate group
       ib = 1
       ie = index(grpname(ib:), "/")
@@ -525,7 +532,7 @@ contains
     io_dataset_inquire = .false.
 
     ! -- check if file is open
-    if (io % file_id /= -1) then
+    if (io_file_isopen(io)) then
       ! -- dataset exists if link resolves to actual object
       ! -- HDF5 requires us to traverse the path explicitly
       ! -- thus we check for each intermediate group first
@@ -597,7 +604,7 @@ contains
   subroutine io_dataset_close(io)
     class(HDF5_IO_T) :: io
 
-    if (io % dset_id /= -1) then
+    if (io_file_isopen(io)) then
       call h5dclose_f(io % dset_id, io % err % rc)
       if (io % err % check(msg="Unable to close dataset", line=__LINE__)) return
       io % dset_id = -1
@@ -1375,7 +1382,7 @@ contains
     character(len=len_trim(value)+1, kind=C_CHAR), target :: cvalue
 
     ! -- check if file is open
-    if (io % file_id /= -1) then
+    if (io_file_isopen(io)) then
       ! -- create attribute dataspace
       dims = 0
       call h5screate_simple_f(0, dims, aspace_id, io % err % rc)
@@ -1415,7 +1422,7 @@ contains
     integer(HSIZE_T) :: dims(1)
 
     ! -- check if file is open
-    if (io % file_id /= -1) then
+    if (io_file_isopen(io)) then
       ! -- get attribute type id
       type_id = io % fs_itype_get(kind(1))
       if (io % err % check(line=__LINE__)) return
@@ -1449,7 +1456,7 @@ contains
     integer(HSIZE_T) :: dims(1)
 
     ! -- check if file is open
-    if (io % file_id /= -1) then
+    if (io_file_isopen(io)) then
       ! -- get attribute type id
       type_id = io % fs_itype_get(kind(1))
       if (io % err % check(line=__LINE__)) return
@@ -1483,7 +1490,7 @@ contains
     integer(HSIZE_T) :: dims(1)
 
     ! -- check if file is open
-    if (io % file_id /= -1) then
+    if (io_file_isopen(io)) then
       ! -- get attribute type id
       type_id = io % fs_ftype_get(sp)
       if (io % err % check(line=__LINE__)) return
@@ -1517,7 +1524,7 @@ contains
     integer(HSIZE_T) :: dims(1)
 
     ! -- check if file is open
-    if (io % file_id /= -1) then
+    if (io_file_isopen(io)) then
       ! -- get attribute type id
       type_id = io % fs_ftype_get(sp)
       if (io % err % check(line=__LINE__)) return
@@ -1551,7 +1558,7 @@ contains
     integer(HSIZE_T) :: dims(1)
 
     ! -- check if file is open
-    if (io % file_id /= -1) then
+    if (io_file_isopen(io)) then
       ! -- get attribute type id
       type_id = io % fs_ftype_get(dp)
       if (io % err % check(line=__LINE__)) return
@@ -1585,7 +1592,7 @@ contains
     integer(HSIZE_T) :: dims(1)
 
     ! -- check if file is open
-    if (io % file_id /= -1) then
+    if (io_file_isopen(io)) then
       ! -- get attribute type id
       type_id = io % fs_ftype_get(dp)
       if (io % err % check(line=__LINE__)) return
@@ -1924,7 +1931,7 @@ contains
     character(len=len(value)+1), pointer :: data
 
     ! -- check if file is open
-    if (io % file_id /= -1) then
+    if (io_file_isopen(io)) then
       ! -- get attribute id
       call h5aopen_f(io % file_id, trim(key), attr_id, io % err % rc)
       if (io % err % check(line=__LINE__)) return
@@ -1952,7 +1959,7 @@ contains
     integer(HSIZE_T) :: dims(1)
 
     ! -- check if file is open
-    if (io % file_id /= -1) then
+    if (io_file_isopen(io)) then
       dims = 0
       ! -- get attribute id
       call h5aopen_f(io % file_id, trim(key), attr_id, io % err % rc)
@@ -1982,7 +1989,7 @@ contains
     integer(HSIZE_T) :: dims(1)
 
     ! -- check if file is open
-    if (io % file_id /= -1) then
+    if (io_file_isopen(io)) then
       dims = size(values)
       ! -- get attribute id
       call h5aopen_f(io % file_id, trim(key), attr_id, io % err % rc)
@@ -2012,7 +2019,7 @@ contains
     integer(HSIZE_T) :: dims(1)
 
     ! -- check if file is open
-    if (io % file_id /= -1) then
+    if (io_file_isopen(io)) then
       dims = 0
       ! -- get attribute id
       call h5aopen_f(io % file_id, trim(key), attr_id, io % err % rc)
@@ -2042,7 +2049,7 @@ contains
     integer(HSIZE_T) :: dims(1)
 
     ! -- check if file is open
-    if (io % file_id /= -1) then
+    if (io_file_isopen(io)) then
       dims = size(values)
       ! -- get attribute id
       call h5aopen_f(io % file_id, trim(key), attr_id, io % err % rc)
@@ -2072,7 +2079,7 @@ contains
     integer(HSIZE_T) :: dims(1)
 
     ! -- check if file is open
-    if (io % file_id /= -1) then
+    if (io_file_isopen(io)) then
       dims = 0
       ! -- get attribute id
       call h5aopen_f(io % file_id, trim(key), attr_id, io % err % rc)
@@ -2102,7 +2109,7 @@ contains
     integer(HSIZE_T) :: dims(1)
 
     ! -- check if file is open
-    if (io % file_id /= -1) then
+    if (io_file_isopen(io)) then
       dims = size(values)
       ! -- get attribute id
       call h5aopen_f(io % file_id, trim(key), attr_id, io % err % rc)
