@@ -1819,9 +1819,9 @@ contains
     end if
 
     io_filespace_fp_datatype_get = 0
-    if (datakind == kind(1.)) then
+    if (datakind == sp) then
       io_filespace_fp_datatype_get = io % fspace_dtype_float
-    else if (datakind == kind(1.d0)) then
+    else if (datakind == dp) then
       io_filespace_fp_datatype_get = io % fspace_dtype_double
     else
       call io % err % set(msg="Unable to identify file data kind", line=__LINE__)
