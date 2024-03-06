@@ -356,7 +356,7 @@ contains
     integer                       :: dimid, ndims, nfdims
     integer, allocatable          :: dimids(:)
     integer(kind=MPI_OFFSET_KIND) :: length
-    character(len=3)              :: label
+    character(len=4)              :: label
 
     ! -- begin
     io % err % rc = 0
@@ -405,6 +405,9 @@ contains
       if (io % fdim_id(item) < 0) then
         dimid = dimid + 1
         write(label, '("x",i2.2)') dimid
+        if (dimid == 1) label='ni'
+        if (dimid == 2) label='nj'
+        if (dimid == 3) label='ncat'
         io % err % rc = nf90mpi_def_dim(io % file_id, label, io % fdims(item), &
           io % fdim_id(item))        
         if (io % err % check(msg=nf90mpi_strerror(io % err % rc), line=__LINE__)) return
